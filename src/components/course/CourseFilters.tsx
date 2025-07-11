@@ -39,7 +39,7 @@ export default function CourseFilters({
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
       <div className="flex flex-col lg:flex-row gap-4 items-center">
         {/* Search */}
-        <div className="flex-1">
+        <div className="flex-1 w-full">
           <Input
             type="text"
             placeholder="Tìm kiếm khóa học..."
