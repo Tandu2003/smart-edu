@@ -13,6 +13,7 @@ import FavoritesHeader from '@/components/favorites/FavoritesHeader';
 import FavoritesList from '@/components/favorites/FavoritesList';
 import FavoritesStats from '@/components/favorites/FavoritesStats';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useViewHistory } from '@/contexts/ViewHistoryContext';
 
 interface Course {
   id: string;
@@ -37,6 +38,7 @@ export default function FavoritesPage() {
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+  const { addToViewHistory } = useViewHistory();
 
   // Initialize favorites with loading delay
   useEffect(() => {
@@ -81,6 +83,9 @@ export default function FavoritesPage() {
   const totalSavings = totalOriginalValue - totalValue;
 
   const handleViewDetails = (course: Course) => {
+    // Add to view history
+    addToViewHistory(course);
+
     setSelectedCourse(course);
     setIsModalOpen(true);
     setIsModalLoading(true);

@@ -3,6 +3,7 @@ import { Menu, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
+import ViewHistoryDropdown from '@/components/history/ViewHistoryDropdown';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -41,6 +42,10 @@ export default function Header({ onSearch }: HeaderProps) {
     }
 
     setIsSheetOpen(false);
+  };
+
+  const handleCourseClick = (course: any) => {
+    navigate(`/courses?search=${encodeURIComponent(course.title)}`);
   };
 
   const handleLinkClick = () => {
@@ -97,6 +102,11 @@ export default function Header({ onSearch }: HeaderProps) {
 
           {/* Right side actions */}
           <div className="flex items-center space-x-2">
+            {/* View History Dropdown */}
+            <div className="hidden md:block">
+              <ViewHistoryDropdown onCourseClick={handleCourseClick} />
+            </div>
+
             {/* Mobile menu button */}
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
@@ -165,6 +175,12 @@ export default function Header({ onSearch }: HeaderProps) {
                           className="pl-10 rounded-xl"
                         />
                       </form>
+                    </div>
+
+                    {/* Mobile View History */}
+                    <div className="border-t pt-4">
+                      <h4 className="text-sm font-medium text-gray-900 mb-3">Lịch sử xem</h4>
+                      <ViewHistoryDropdown onCourseClick={handleCourseClick} />
                     </div>
                   </div>
                 </div>

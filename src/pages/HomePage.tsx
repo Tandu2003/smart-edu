@@ -7,6 +7,7 @@ import { mockCourses } from '@/assets/data/mockCourses';
 import CourseCard from '@/components/course/CourseCard';
 import CourseCardSkeleton from '@/components/course/CourseCardSkeleton';
 import CourseModal from '@/components/course/CourseModal';
+import { useViewHistory } from '@/contexts/ViewHistoryContext';
 
 interface Course {
   id: string;
@@ -33,6 +34,7 @@ export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalLoading, setIsModalLoading] = useState(false);
+  const { addToViewHistory } = useViewHistory();
 
   // Initialize courses with loading delay
   useEffect(() => {
@@ -98,6 +100,9 @@ export default function HomePage() {
   };
 
   const handleViewDetails = (course: Course) => {
+    // Add to view history
+    addToViewHistory(course);
+
     setSelectedCourse(course);
     setIsModalOpen(true);
     setIsModalLoading(true);

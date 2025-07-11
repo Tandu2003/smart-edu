@@ -8,6 +8,7 @@ import CourseList from '@/components/course/CourseList';
 import CourseModal from '@/components/course/CourseModal';
 import NoResults from '@/components/course/NoResults';
 import PaginationWrapper from '@/components/course/PaginationWrapper';
+import { useViewHistory } from '@/contexts/ViewHistoryContext';
 
 interface Course {
   id: string;
@@ -31,6 +32,7 @@ export default function CoursesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalLoading, setIsModalLoading] = useState(false);
+  const { addToViewHistory } = useViewHistory();
 
   // Get values from URL params with defaults
   const searchQuery = searchParams.get('search') || '';
@@ -142,6 +144,9 @@ export default function CoursesPage() {
   };
 
   const handleViewDetails = (course: Course) => {
+    // Add to view history
+    addToViewHistory(course);
+
     setSelectedCourse(course);
     setIsModalOpen(true);
     setIsModalLoading(true);
