@@ -1,7 +1,7 @@
 import { ArrowRight, Play } from 'lucide-react';
 
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
 import { mockCourses } from '@/assets/data/mockCourses';
 import CourseCard from '@/components/course/CourseCard';
@@ -26,6 +26,7 @@ interface Course {
 }
 
 export default function HomePage() {
+  const location = useLocation();
   const [courses, setCourses] = useState<Course[]>(mockCourses);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,6 +48,23 @@ export default function HomePage() {
       averageRating,
     };
   }, [courses]);
+
+  // Handle hash navigation
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        setTimeout(() => {
+          const headerHeight = 20;
+          const elementTop = element.getBoundingClientRect().top + window.pageYOffset;
+          window.scrollTo({
+            top: elementTop - headerHeight - 20, // 20px extra spacing
+            behavior: 'smooth',
+          });
+        }, 100);
+      }
+    }
+  }, [location.hash]);
 
   // Get featured courses (top 8 by rating and students)
   const featuredCourses = courses
@@ -139,7 +157,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Courses */}
-      <section className="py-16">
+      <section id="featured-courses" className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
             <div>
