@@ -9,10 +9,12 @@ import CourseCard from '@/components/course/CourseCard';
 import CourseCardSkeleton from '@/components/course/CourseCardSkeleton';
 import CourseModal from '@/components/course/CourseModal';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import { useViewHistory } from '@/contexts/ViewHistoryContext';
 
 export default function HomePage() {
   const location = useLocation();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { addToViewHistory } = useViewHistory();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,6 +95,9 @@ export default function HomePage() {
   };
 
   const handleViewDetails = (course: Course) => {
+    // Add to view history when user opens course details
+    addToViewHistory(course);
+
     setSelectedCourse(course);
     setIsModalOpen(true);
     setIsModalLoading(true);

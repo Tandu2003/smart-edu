@@ -10,10 +10,12 @@ import CourseModal from '@/components/course/CourseModal';
 import NoResults from '@/components/course/NoResults';
 import PaginationWrapper from '@/components/course/PaginationWrapper';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import { useViewHistory } from '@/contexts/ViewHistoryContext';
 
 export default function CoursesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { addToViewHistory } = useViewHistory();
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -138,6 +140,9 @@ export default function CoursesPage() {
   };
 
   const handleViewDetails = (course: Course) => {
+    // Add to view history when user opens course details
+    addToViewHistory(course);
+
     setSelectedCourse(course);
     setIsModalOpen(true);
     setIsModalLoading(true);
