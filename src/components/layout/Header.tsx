@@ -81,6 +81,12 @@ export default function Header({ onSearch }: HeaderProps) {
             >
               Yêu thích
             </Link>
+            <Link
+              to="/history"
+              className={`text-sm font-medium transition-colors ${isActive('/history') ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'}`}
+            >
+              Lịch sử xem
+            </Link>
           </nav>
 
           {/* Search Bar */}
@@ -150,6 +156,17 @@ export default function Header({ onSearch }: HeaderProps) {
                         }`}
                       >
                         Yêu thích
+                      </Link>
+                      <Link
+                        to="/history"
+                        onClick={handleLinkClick}
+                        className={`text-base font-medium rounded-xl px-4 py-3 transition-all duration-200 ${
+                          isActive('/history')
+                            ? 'bg-blue-50 text-blue-600 border border-blue-200'
+                            : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                        }`}
+                      >
+                        Lịch sử xem
                       </Link>
                     </nav>
 

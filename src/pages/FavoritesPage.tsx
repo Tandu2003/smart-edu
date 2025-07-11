@@ -12,10 +12,12 @@ import FavoritesHeader from '@/components/favorites/FavoritesHeader';
 import FavoritesList from '@/components/favorites/FavoritesList';
 import FavoritesStats from '@/components/favorites/FavoritesStats';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import { useViewHistory } from '@/contexts/ViewHistoryContext';
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
   const { favorites, removeFromFavorites, clearAllFavorites, toggleFavorite } = useFavorites();
+  const { addToViewHistory } = useViewHistory();
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
@@ -56,6 +58,9 @@ export default function FavoritesPage() {
   const totalSavings = totalOriginalValue - totalValue;
 
   const handleViewDetails = (course: Course) => {
+    // Add to view history when user opens course details
+    addToViewHistory(course);
+
     setSelectedCourse(course);
     setIsModalOpen(true);
     setIsModalLoading(true);
@@ -93,6 +98,13 @@ export default function FavoritesPage() {
     setCurrentPage(page);
     // Smooth scroll to top of the list
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleToggleFavorite = (courseId: string) => {
+    const course = favorites.find((c) => c.id === courseId);
+    if (course) {
+      toggleFavorite(course);
+    }
   };
 
   return (
@@ -154,11 +166,7 @@ export default function FavoritesPage() {
         course={selectedCourse}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onToggleFavorite={(courseId) => {
-          if (selectedCourse) {
-            toggleFavorite(selectedCourse);
-          }
-        }}
+        onToggleFavorite={handleToggleFavorite}
         isLoading={isModalLoading}
       />
     </div>
