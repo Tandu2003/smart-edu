@@ -4,17 +4,16 @@ import { toast } from 'sonner';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import type { Course } from '@/assets/data/mockCourses';
 import CourseModal from '@/components/course/CourseModal';
 import PaginationWrapper from '@/components/course/PaginationWrapper';
 import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useViewHistory } from '@/contexts/ViewHistoryContext';
+import type { Course } from '@/types';
 
 export default function ViewHistoryPage() {
   const navigate = useNavigate();
-  const { viewHistory, removeFromViewHistory, clearViewHistory, addToViewHistory } =
-    useViewHistory();
+  const { viewHistory, removeFromHistory, clearHistory, addToHistory } = useViewHistory();
   const { toggleFavorite, isFavorite } = useFavorites();
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -30,7 +29,7 @@ export default function ViewHistoryPage() {
 
   const handleViewDetails = (course: Course) => {
     // Add to view history when user opens course details (moves to top)
-    addToViewHistory(course);
+    addToHistory(course);
 
     setSelectedCourse(course);
     setIsModalOpen(true);
@@ -48,7 +47,7 @@ export default function ViewHistoryPage() {
   };
 
   const handleRemoveFromHistory = (courseId: string) => {
-    removeFromViewHistory(courseId);
+    removeFromHistory(courseId);
     // Reset to first page if current page becomes empty
     if (paginatedHistory.length === 1 && currentPage > 1) {
       setCurrentPage(currentPage - 1);
@@ -56,7 +55,7 @@ export default function ViewHistoryPage() {
   };
 
   const handleClearAllHistory = () => {
-    clearViewHistory();
+    clearHistory();
     setCurrentPage(1);
   };
 

@@ -1,27 +1,14 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
 
-import type { Course } from '@/assets/data/mockCourses';
-
-interface ViewHistoryContextType {
-  viewHistory: Course[];
-  addToViewHistory: (course: Course) => void;
-  removeFromViewHistory: (courseId: string) => void;
-  clearViewHistory: () => void;
-  isInViewHistory: (courseId: string) => boolean;
-  viewHistoryCount: number;
-}
+import type { ViewHistoryContextType } from '@/types/context';
+import type { Course } from '@/types/course';
 
 const ViewHistoryContext = createContext<ViewHistoryContextType | undefined>(undefined);
 
 const VIEW_HISTORY_STORAGE_KEY = 'smart-edu-view-history';
 const MAX_HISTORY_ITEMS = 50; // Giới hạn số lượng items trong lịch sử
 
-interface ViewHistoryProviderProps {
-  children: ReactNode;
-}
-
-export function ViewHistoryProvider({ children }: ViewHistoryProviderProps) {
+export function ViewHistoryProvider({ children }: { children: React.ReactNode }) {
   const [viewHistory, setViewHistory] = useState<Course[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -46,7 +33,7 @@ export function ViewHistoryProvider({ children }: ViewHistoryProviderProps) {
     }
   }, [viewHistory, isLoaded]);
 
-  const addToViewHistory = (course: Course) => {
+  const addToHistory = (course: Course) => {
     setViewHistory((prev) => {
       // Remove existing course if it exists (to move it to front)
       const filtered = prev.filter((item) => item.id !== course.id);
@@ -59,11 +46,11 @@ export function ViewHistoryProvider({ children }: ViewHistoryProviderProps) {
     });
   };
 
-  const removeFromViewHistory = (courseId: string) => {
+  const removeFromHistory = (courseId: string) => {
     setViewHistory((prev) => prev.filter((item) => item.id !== courseId));
   };
 
-  const clearViewHistory = () => {
+  const clearHistory = () => {
     setViewHistory([]);
   };
 
@@ -75,11 +62,9 @@ export function ViewHistoryProvider({ children }: ViewHistoryProviderProps) {
 
   const value: ViewHistoryContextType = {
     viewHistory,
-    addToViewHistory,
-    removeFromViewHistory,
-    clearViewHistory,
-    isInViewHistory,
-    viewHistoryCount,
+    addToHistory,
+    removeFromHistory,
+    clearHistory,
   };
 
   return <ViewHistoryContext.Provider value={value}>{children}</ViewHistoryContext.Provider>;

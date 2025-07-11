@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import type { Course } from '@/assets/data/mockCourses';
 import CourseModal from '@/components/course/CourseModal';
 import PaginationWrapper from '@/components/course/PaginationWrapper';
 import FavoritesBulkActions from '@/components/favorites/FavoritesBulkActions';
@@ -13,11 +12,12 @@ import FavoritesList from '@/components/favorites/FavoritesList';
 import FavoritesStats from '@/components/favorites/FavoritesStats';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useViewHistory } from '@/contexts/ViewHistoryContext';
+import type { Course } from '@/types';
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
-  const { favorites, removeFromFavorites, clearAllFavorites, toggleFavorite } = useFavorites();
-  const { addToViewHistory } = useViewHistory();
+  const { favorites, removeFromFavorites, clearFavorites, toggleFavorite } = useFavorites();
+  const { addToHistory } = useViewHistory();
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
@@ -40,7 +40,7 @@ export default function FavoritesPage() {
   };
 
   const handleRemoveAllFavorites = () => {
-    clearAllFavorites();
+    clearFavorites();
     setCurrentPage(1);
     toast.success('Đã xóa tất cả khỏi danh sách yêu thích');
   };
@@ -65,7 +65,7 @@ export default function FavoritesPage() {
 
   const handleViewDetails = (course: Course) => {
     // Add to view history when user opens course details
-    addToViewHistory(course);
+    addToHistory(course);
 
     setSelectedCourse(course);
     setIsModalOpen(true);

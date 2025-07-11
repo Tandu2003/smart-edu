@@ -2,9 +2,9 @@ import { ArrowRight } from 'lucide-react';
 
 import { Link } from 'react-router-dom';
 
-import type { Course } from '@/assets/data/mockCourses';
 import CourseCard from '@/components/course/CourseCard';
 import CourseCardSkeleton from '@/components/course/CourseCardSkeleton';
+import type { Course } from '@/types';
 
 interface FeaturedCoursesSectionProps {
   isLoading: boolean;

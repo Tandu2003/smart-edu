@@ -1,26 +1,8 @@
+import type { SuggestedCourse } from '@/types/course';
+
 import { mockCourses } from './mockCourses';
 
-export interface SuggestedCourse {
-  id: string;
-  title: string;
-  instructor: string;
-  price: number;
-  image: string;
-  reason: string;
-  matchScore: number;
-  category: string;
-  level: string;
-}
-
-export interface AIMessage {
-  id: string;
-  type: 'user' | 'ai';
-  content: string;
-  timestamp: string;
-  suggestions?: SuggestedCourse[];
-}
-
-export interface AIProfile {
+export interface MockAIProfile {
   userInterests: string[];
   skillLevel: 'Beginner' | 'Intermediate' | 'Advanced';
   preferredCategories: string[];
@@ -29,7 +11,7 @@ export interface AIProfile {
 }
 
 // Mock user profile for personalized recommendations
-export const mockUserProfile: AIProfile = {
+export const mockUserProfile: MockAIProfile = {
   userInterests: ['Lập trình', 'Frontend Development', 'React', 'JavaScript'],
   skillLevel: 'Intermediate',
   preferredCategories: ['Lập trình', 'Thiết kế'],
@@ -304,7 +286,7 @@ export const mockSuggestedCourses = (userMessage: string): SuggestedCourse[] => 
 };
 
 // Mock conversation history using actual course data
-export const mockConversationHistory: AIMessage[] = [
+export const mockConversationHistory = [
   {
     id: '1',
     type: 'user',

@@ -1,25 +1,8 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 
 import { mockAIResponse, mockSuggestedCourses } from '@/assets/data/mockAISuggestion';
-import type { SuggestedCourse } from '@/types';
-
-export interface ChatMessage {
-  id: string;
-  type: 'user' | 'ai';
-  content: string;
-  timestamp: string;
-  suggestions?: SuggestedCourse[];
-}
-
-interface ChatBotContextType {
-  messages: ChatMessage[];
-  isOpen: boolean;
-  isTyping: boolean;
-  toggleChat: () => void;
-  sendMessage: (message: string) => Promise<void>;
-  clearChat: () => void;
-}
+import type { ChatBotContextType, ChatBotProviderProps, ChatMessage } from '@/types/context';
+import type { SuggestedCourse } from '@/types/course';
 
 const ChatBotContext = createContext<ChatBotContextType | undefined>(undefined);
 
@@ -29,10 +12,6 @@ export function useChatBot() {
     throw new Error('useChatBot must be used within a ChatBotProvider');
   }
   return context;
-}
-
-interface ChatBotProviderProps {
-  children: ReactNode;
 }
 
 export function ChatBotProvider({ children }: ChatBotProviderProps) {
