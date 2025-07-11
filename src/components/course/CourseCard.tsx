@@ -2,6 +2,7 @@ import { Clock, Eye, Heart, ShoppingCart, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { useFavorites } from '@/contexts/FavoritesContext';
 
 interface Course {
   id: string;
@@ -24,12 +25,14 @@ interface CourseCardProps {
 }
 
 export default function CourseCard({ course, onToggleFavorite, onViewDetails }: CourseCardProps) {
+  const { isFavorite } = useFavorites();
+
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onToggleFavorite(course.id);
 
-    if (course.isFavorite) {
+    if (isFavorite(course.id)) {
       toast.success('Đã xóa khỏi danh sách yêu thích');
     } else {
       toast.success('Đã thêm vào danh sách yêu thích');
@@ -64,12 +67,12 @@ export default function CourseCard({ course, onToggleFavorite, onViewDetails }: 
         <button
           onClick={handleToggleFavorite}
           className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-200 z-10 ${
-            course.isFavorite
+            isFavorite(course.id)
               ? 'bg-red-500 text-white shadow-lg'
               : 'bg-white/80 text-gray-600 hover:bg-red-500 hover:text-white'
           }`}
         >
-          <Heart size={16} fill={course.isFavorite ? 'currentColor' : 'none'} />
+          <Heart size={16} fill={isFavorite(course.id) ? 'currentColor' : 'none'} />
         </button>
         {discountPercentage > 0 && (
           <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
