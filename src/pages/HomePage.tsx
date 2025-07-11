@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import type { Course } from '@/assets/data/mockCourses';
@@ -90,50 +90,60 @@ export default function HomePage() {
   }, [location.hash]);
 
   // Get featured courses (top 8 by rating and students)
-  const featuredCourses = coursesWithFavorites
-    .sort((a, b) => {
-      // Sort by rating first, then by number of students
-      if (b.rating !== a.rating) {
-        return b.rating - a.rating;
+  const featuredCourses = useMemo(
+    () =>
+      coursesWithFavorites
+        .sort((a, b) => {
+          // Sort by rating first, then by number of students
+          if (b.rating !== a.rating) {
+            return b.rating - a.rating;
+          }
+          return b.students - a.students;
+        })
+        .slice(0, 8),
+    [coursesWithFavorites]
+  );
+
+  const handleToggleFavorite = useCallback(
+    (courseId: string) => {
+      const course = coursesWithFavorites.find((c) => c.id === courseId);
+      if (course) {
+        const wasAlreadyFavorite = isFavorite(courseId);
+
+        toggleFavorite(course);
+
+        if (wasAlreadyFavorite) {
+          toast.success('Đã xóa khỏi danh sách yêu thích');
+        } else {
+          toast.success('Đã thêm vào danh sách yêu thích');
+        }
       }
-      return b.students - a.students;
-    })
-    .slice(0, 8);
+    },
+    [coursesWithFavorites, isFavorite, toggleFavorite]
+  );
 
-  const handleToggleFavorite = (courseId: string) => {
-    const course = coursesWithFavorites.find((c) => c.id === courseId);
-    if (course) {
-      const wasAlreadyFavorite = isFavorite(courseId);
+  const handleViewDetails = useCallback(
+    (course: Course) => {
+      // Add to view history when user opens course details
+      addToViewHistory(course);
 
-      toggleFavorite(course);
+      setSelectedCourse(course);
+      setIsModalOpen(true);
+      setIsModalLoading(true);
 
-      if (wasAlreadyFavorite) {
-        toast.success('Đã xóa khỏi danh sách yêu thích');
-      } else {
-        toast.success('Đã thêm vào danh sách yêu thích');
-      }
-    }
-  };
+      // Simulate loading delay for modal content
+      setTimeout(() => {
+        setIsModalLoading(false);
+      }, 400);
+    },
+    [addToViewHistory]
+  );
 
-  const handleViewDetails = (course: Course) => {
-    // Add to view history when user opens course details
-    addToViewHistory(course);
-
-    setSelectedCourse(course);
-    setIsModalOpen(true);
-    setIsModalLoading(true);
-
-    // Simulate loading delay for modal content
-    setTimeout(() => {
-      setIsModalLoading(false);
-    }, 400);
-  };
-
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
     setIsModalLoading(false);
     setSelectedCourse(null);
-  };
+  }, []);
 
   const handleAISuggestions = async () => {
     setIsSuggestionsLoading(true);
