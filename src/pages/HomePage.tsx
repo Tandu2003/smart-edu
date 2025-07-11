@@ -123,11 +123,10 @@ export default function HomePage() {
     setIsSuggestionsLoading(true);
     setShowSuggestions(true);
 
-    // Simulate API call to /api/suggestions?userId=xxx
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
+      await fetch('/api/suggestions?userId=xxx');
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Generate suggestions based on user behavior
       const suggestedCourses = generateSmartSuggestions();
       setSuggestions(suggestedCourses);
     } catch (error) {
@@ -142,13 +141,6 @@ export default function HomePage() {
     // Get user behavior data
     const favoriteCourses = coursesWithFavorites.filter((course) => course.isFavorite);
     const viewedCourses = JSON.parse(localStorage.getItem('smart-edu-view-history') || '[]');
-
-    console.log('🎯 AI Behavior Analysis:', {
-      favorites: favoriteCourses.length,
-      viewed: viewedCourses.length,
-      favoriteCategories: favoriteCourses.map((c) => c.category),
-      viewedCategories: viewedCourses.map((c: any) => c.category),
-    });
 
     // Analyze user preferences
     const favoriteCategories = [...new Set(favoriteCourses.map((course) => course.category))];
