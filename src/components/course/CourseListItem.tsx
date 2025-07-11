@@ -1,6 +1,7 @@
 import { Clock, Eye, Heart, ShoppingCart, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { Button } from '@/components/ui/button';
 import { useFavorites } from '@/contexts/FavoritesContext';
 
 interface Course {
@@ -69,16 +70,18 @@ export default function CourseListItem({
             alt={course.title}
             className="w-48 h-32 object-cover rounded-lg group-hover:scale-105 transition-transform duration-200"
           />
-          <button
+          <Button
+            variant="favorite"
+            size="favorite"
             onClick={handleToggleFavorite}
-            className={`absolute top-2 right-2 p-2 rounded-full transition-all duration-200 z-10 ${
+            className={`absolute top-2 right-2 z-10 ${
               isFavorite(course.id)
                 ? 'bg-red-500 text-white shadow-lg'
                 : 'bg-white/80 text-gray-600 hover:bg-red-500 hover:text-white'
             }`}
           >
             <Heart size={16} fill={isFavorite(course.id) ? 'currentColor' : 'none'} />
-          </button>
+          </Button>
           {discountPercentage > 0 && (
             <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
               -{discountPercentage}%
@@ -122,20 +125,18 @@ export default function CourseListItem({
 
         {/* Action Buttons - Vertical Layout */}
         <div className="flex flex-col space-y-3 flex-shrink-0">
-          <button
-            onClick={handlePurchase}
-            className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold text-sm py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center justify-center whitespace-nowrap"
-          >
+          <Button variant="purchase" onClick={handlePurchase} className="whitespace-nowrap">
             <ShoppingCart size={16} className="mr-2" />
             Đăng ký ngay
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="details"
             onClick={() => onViewDetails(course)}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-sm py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center justify-center whitespace-nowrap"
+            className="whitespace-nowrap"
           >
             <Eye size={16} className="mr-2" />
             Xem chi tiết
-          </button>
+          </Button>
         </div>
       </div>
     </div>

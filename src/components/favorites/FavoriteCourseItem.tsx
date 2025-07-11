@@ -84,18 +84,11 @@ export default function FavoriteCourseItem({
             </div>
 
             <div className="flex items-center space-x-3">
-              <Button
-                onClick={() => onViewDetails(course)}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-sm py-2 px-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center"
-              >
+              <Button variant="details" onClick={() => onViewDetails(course)}>
                 <Eye size={16} className="mr-2" />
                 Xem chi tiết
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => onRemove(course.id)}
-                className="text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 flex items-center"
-              >
+              <Button variant="remove" onClick={() => onRemove(course.id)}>
                 <Trash2 size={16} className="mr-2" />
                 Xóa
               </Button>

@@ -101,9 +101,18 @@ export default function FavoritesPage() {
   };
 
   const handleToggleFavorite = (courseId: string) => {
-    const course = favorites.find((c) => c.id === courseId);
-    if (course) {
-      toggleFavorite(course);
+    // Use selectedCourse instead of searching in favorites
+    // because selectedCourse is always available when modal is open
+    if (selectedCourse && selectedCourse.id === courseId) {
+      const wasAlreadyFavorite = favorites.some((fav) => fav.id === courseId);
+
+      toggleFavorite(selectedCourse);
+
+      if (wasAlreadyFavorite) {
+        toast.success('Đã xóa khỏi danh sách yêu thích');
+      } else {
+        toast.success('Đã thêm vào danh sách yêu thích');
+      }
     }
   };
 

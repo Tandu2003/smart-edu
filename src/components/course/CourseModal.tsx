@@ -2,6 +2,7 @@ import { CheckCircle, Clock, Heart, Play, Share2, Star, Users, X } from 'lucide-
 import { toast } from 'sonner';
 
 import { courseDetails } from '@/assets/data/mockCourseDetails';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogClose,
@@ -10,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useFavorites } from '@/contexts/FavoritesContext';
 
 interface Course {
   id: string;
@@ -46,6 +48,7 @@ export default function CourseModal({
 }: CourseModalProps) {
   // Get course details from the new structure
   const courseDetail = course ? courseDetails[course.id] : null;
+  const { isFavorite } = useFavorites();
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -238,7 +241,7 @@ export default function CourseModal({
                 -{discountPercentage}%
               </div>
             )}
-            <button className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all">
+            <button className="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-70 transition-all cursor-pointer">
               <Play size={20} />
             </button>
           </div>
@@ -359,12 +362,9 @@ export default function CourseModal({
                 </span>
               )}
             </div>
-            <button
-              onClick={handlePurchase}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-base py-3 px-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center justify-center mb-3"
-            >
+            <Button variant="purchase" onClick={handlePurchase} className="w-full rounded-xl mb-3">
               Đăng ký ngay
-            </button>
+            </Button>
             <div className="flex items-center space-x-2 text-sm text-gray-600">
               <CheckCircle className="text-green-500" size={16} />
               <span>Học mọi lúc, mọi nơi</span>
@@ -433,29 +433,38 @@ export default function CourseModal({
                 </>
               ) : (
                 <>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={handleShare}
-                    className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+                    className="text-gray-600 hover:text-gray-900"
                   >
                     <Share2 size={20} />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="favorite"
+                    size="icon"
                     onClick={handleToggleFavorite}
-                    className={`p-2 rounded-full transition-all ${
-                      course?.isFavorite
+                    className={`${
+                      course && isFavorite(course.id)
                         ? 'text-red-500 bg-red-50'
                         : 'text-gray-600 hover:text-red-500 hover:bg-red-50'
                     }`}
                   >
-                    <Heart size={20} fill={course?.isFavorite ? 'currentColor' : 'none'} />
-                  </button>
+                    <Heart
+                      size={20}
+                      fill={course && isFavorite(course.id) ? 'currentColor' : 'none'}
+                    />
+                  </Button>
                   <DialogClose asChild>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={onClose}
-                      className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+                      className="text-gray-600 hover:text-gray-900"
                     >
                       <X size={20} />
-                    </button>
+                    </Button>
                   </DialogClose>
                 </>
               )}

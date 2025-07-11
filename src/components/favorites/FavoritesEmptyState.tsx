@@ -22,17 +22,10 @@ export default function FavoritesEmptyState({
         danh sách yêu thích của bạn.
       </p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button
-          onClick={onExploreCourses}
-          className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
-        >
+        <Button variant="details" onClick={onExploreCourses}>
           Khám phá khóa học
         </Button>
-        <Button
-          variant="outline"
-          onClick={onViewFeatured}
-          className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 font-semibold py-2 px-6 rounded-lg transition-all duration-200"
-        >
+        <Button variant="outline" onClick={onViewFeatured}>
           Xem khóa học nổi bật
         </Button>
       </div>

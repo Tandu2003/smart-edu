@@ -1,17 +1,57 @@
 import { Link } from 'react-router-dom';
 
-const categories = [
-  { name: 'Lập trình', icon: '💻', count: '2,500+' },
-  { name: 'Ngoại ngữ', icon: '🌍', count: '1,800+' },
-  { name: 'Marketing', icon: '📈', count: '1,200+' },
-  { name: 'Thiết kế', icon: '🎨', count: '900+' },
-  { name: 'Kinh doanh', icon: '💼', count: '1,500+' },
-  { name: 'Âm nhạc', icon: '🎵', count: '600+' },
-  { name: 'Sức khỏe', icon: '🏃‍♂️', count: '400+' },
-  { name: 'Khác', icon: '📚', count: '1,000+' },
-];
+import type { Course } from '@/assets/data/mockCourses';
+import { Card, CardContent } from '@/components/ui/card';
 
-export default function CategoriesSection() {
+interface CategoriesSectionProps {
+  courses: Course[];
+}
+
+// Icon mapping for different categories
+const categoryIcons: { [key: string]: string } = {
+  'Lập trình': '💻',
+  'Ngoại ngữ': '🌍',
+  Marketing: '📈',
+  'Thiết kế': '🎨',
+  'Kinh doanh': '💼',
+  'Âm nhạc': '🎵',
+  'Sức khỏe': '🏃‍♂️',
+  'Kỹ năng mềm': '🧠',
+  'Khoa học': '🔬',
+  'Công nghệ': '⚙️',
+  'Nghệ thuật': '🎭',
+  Khác: '📚',
+};
+
+export default function CategoriesSection({ courses }: CategoriesSectionProps) {
+  // Calculate dynamic categories from course data
+  const categoryStats = courses.reduce(
+    (acc, course) => {
+      const category = course.category;
+      if (!acc[category]) {
+        acc[category] = 0;
+      }
+      acc[category]++;
+      return acc;
+    },
+    {} as { [key: string]: number }
+  );
+
+  // Convert to array and sort by course count (descending)
+  const categories = Object.entries(categoryStats)
+    .map(([name, count]) => ({
+      name,
+      count,
+      icon: categoryIcons[name] || '📚', // Default icon if not found
+    }))
+    .sort((a, b) => b.count - a.count) // Sort by count descending
+    .slice(0, 8); // Show top 8 categories
+
+  // If no courses, don't render the section
+  if (categories.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,13 +63,17 @@ export default function CategoriesSection() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {categories.map((category, index) => (
             <Link
-              key={index}
+              key={category.name}
               to={`/courses?category=${encodeURIComponent(category.name)}`}
-              className="card p-6 text-center hover:shadow-lg transition-shadow duration-200"
+              className="block"
             >
-              <div className="text-4xl mb-3">{category.icon}</div>
-              <h3 className="font-semibold text-gray-900 mb-1">{category.name}</h3>
-              <p className="text-sm text-gray-600">{category.count} khóa học</p>
+              <Card className="text-center hover:shadow-lg transition-all duration-200 transform hover:scale-105 cursor-pointer h-full">
+                <CardContent className="p-6">
+                  <div className="text-4xl mb-3">{category.icon}</div>
+                  <h3 className="font-semibold text-gray-900 mb-1">{category.name}</h3>
+                  <p className="text-sm text-gray-600">{category.count} khóa học</p>
+                </CardContent>
+              </Card>
             </Link>
           ))}
         </div>

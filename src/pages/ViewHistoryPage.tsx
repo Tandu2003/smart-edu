@@ -1,4 +1,5 @@
 import { Clock, Eye, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -14,7 +15,7 @@ export default function ViewHistoryPage() {
   const navigate = useNavigate();
   const { viewHistory, removeFromViewHistory, clearViewHistory, addToViewHistory } =
     useViewHistory();
-  const { toggleFavorite } = useFavorites();
+  const { toggleFavorite, isFavorite } = useFavorites();
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalLoading, setIsModalLoading] = useState(false);
@@ -104,7 +105,15 @@ export default function ViewHistoryPage() {
   const handleToggleFavorite = (courseId: string) => {
     const course = viewHistory.find((c) => c.id === courseId);
     if (course) {
+      const wasAlreadyFavorite = isFavorite(courseId);
+
       toggleFavorite(course);
+
+      if (wasAlreadyFavorite) {
+        toast.success('Đã xóa khỏi danh sách yêu thích');
+      } else {
+        toast.success('Đã thêm vào danh sách yêu thích');
+      }
     }
   };
 
@@ -127,17 +136,10 @@ export default function ViewHistoryPage() {
               tâm.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                onClick={handleExploreCourses}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-2 px-6 rounded-lg"
-              >
+              <Button variant="details" onClick={handleExploreCourses}>
                 Khám phá khóa học
               </Button>
-              <Button
-                variant="outline"
-                onClick={handleViewFeatured}
-                className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 font-semibold py-2 px-6 rounded-lg"
-              >
+              <Button variant="outline" onClick={handleViewFeatured}>
                 Xem khóa học nổi bật
               </Button>
             </div>
@@ -154,11 +156,7 @@ export default function ViewHistoryPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-3xl font-bold text-gray-900">Lịch sử xem</h1>
-            <Button
-              variant="outline"
-              onClick={handleClearAllHistory}
-              className="text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
-            >
+            <Button variant="remove" onClick={handleClearAllHistory}>
               <Trash2 size={16} className="mr-2" />
               Xóa tất cả
             </Button>
@@ -227,18 +225,11 @@ export default function ViewHistoryPage() {
                     </div>
 
                     <div className="flex items-center space-x-3">
-                      <Button
-                        onClick={() => handleViewDetails(course)}
-                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-sm py-2 px-4 rounded-lg flex items-center"
-                      >
+                      <Button variant="details" onClick={() => handleViewDetails(course)}>
                         <Eye size={16} className="mr-2" />
                         Xem chi tiết
                       </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => handleRemoveFromHistory(course.id)}
-                        className="text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 flex items-center"
-                      >
+                      <Button variant="remove" onClick={() => handleRemoveFromHistory(course.id)}>
                         <Trash2 size={16} className="mr-2" />
                         Xóa khỏi lịch sử
                       </Button>
