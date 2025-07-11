@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import type { Course } from '@/assets/data/mockCourses';
 import { mockCourses } from '@/assets/data/mockCourses';
 import CourseModal from '@/components/course/CourseModal';
 import AISuggestionsSection from '@/components/home/AISuggestionsSection';
@@ -13,12 +12,13 @@ import HeroSection from '@/components/home/HeroSection';
 import StatsSection from '@/components/home/StatsSection';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useViewHistory } from '@/contexts/ViewHistoryContext';
+import type { Course } from '@/types';
 import type { Statistics, SuggestedCourse } from '@/types';
 
 export default function HomePage() {
   const location = useLocation();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const { addToViewHistory } = useViewHistory();
+  const { addToHistory } = useViewHistory();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -125,7 +125,7 @@ export default function HomePage() {
   const handleViewDetails = useCallback(
     (course: Course) => {
       // Add to view history when user opens course details
-      addToViewHistory(course);
+      addToHistory(course);
 
       setSelectedCourse(course);
       setIsModalOpen(true);
@@ -136,7 +136,7 @@ export default function HomePage() {
         setIsModalLoading(false);
       }, 400);
     },
-    [addToViewHistory]
+    [addToHistory]
   );
 
   const handleCloseModal = useCallback(() => {

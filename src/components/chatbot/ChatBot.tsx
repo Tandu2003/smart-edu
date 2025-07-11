@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChatBot } from '@/contexts/ChatBotContext';
-import type { ChatMessage } from '@/contexts/ChatBotContext';
-import type { SuggestedCourse } from '@/types';
+import type { ChatMessage, SuggestedCourse } from '@/types';
 
 interface ChatBubbleProps {
   message: ChatMessage;

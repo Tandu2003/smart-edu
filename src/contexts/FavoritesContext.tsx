@@ -1,27 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
 
-import type { Course } from '@/assets/data/mockCourses';
-
-interface FavoritesContextType {
-  favorites: Course[];
-  addToFavorites: (course: Course) => void;
-  removeFromFavorites: (courseId: string) => void;
-  toggleFavorite: (course: Course) => void;
-  isFavorite: (courseId: string) => boolean;
-  clearAllFavorites: () => void;
-  favoritesCount: number;
-}
+import type { FavoritesContextType } from '@/types/context';
+import type { Course } from '@/types/course';
 
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
 const FAVORITES_STORAGE_KEY = 'smart-edu-favorites';
 
-interface FavoritesProviderProps {
-  children: ReactNode;
-}
-
-export function FavoritesProvider({ children }: FavoritesProviderProps) {
+export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const [favorites, setFavorites] = useState<Course[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -71,11 +57,32 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
     return favorites.some((fav) => fav.id === courseId);
   };
 
-  const clearAllFavorites = () => {
+  const clearFavorites = () => {
     setFavorites([]);
   };
 
-  const favoritesCount = favorites.length;
+  const favoriteCount = favorites.length;
+  const selectedCourses: string[] = [];
+
+  const selectCourse = (courseId: string) => {
+    // Implementation for selecting courses
+  };
+
+  const deselectCourse = (courseId: string) => {
+    // Implementation for deselecting courses
+  };
+
+  const selectAllCourses = () => {
+    // Implementation for selecting all courses
+  };
+
+  const deselectAllCourses = () => {
+    // Implementation for deselecting all courses
+  };
+
+  const removeSelectedCourses = () => {
+    // Implementation for removing selected courses
+  };
 
   const value: FavoritesContextType = {
     favorites,
@@ -83,8 +90,14 @@ export function FavoritesProvider({ children }: FavoritesProviderProps) {
     removeFromFavorites,
     toggleFavorite,
     isFavorite,
-    clearAllFavorites,
-    favoritesCount,
+    clearFavorites,
+    favoriteCount,
+    selectedCourses,
+    selectCourse,
+    deselectCourse,
+    selectAllCourses,
+    deselectAllCourses,
+    removeSelectedCourses,
   };
 
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;

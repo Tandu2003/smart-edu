@@ -1,44 +1,7 @@
 // Import mockCourses and generate details for each course
-import { mockCourses } from './mockCourses';
+import type { CourseDetail } from '@/types/course';
 
-export interface CourseDetail {
-  id: string;
-  title: string;
-  instructor: {
-    name: string;
-    avatar: string;
-    bio: string;
-    experience: string;
-    rating: number;
-    students: number;
-    courses: number;
-  };
-  description: string;
-  requirements: string[];
-  whatYouWillLearn: string[];
-  curriculum: {
-    title: string;
-    lessons: number;
-    duration: string;
-    topics?: string[];
-  }[];
-  reviews: {
-    id: string;
-    user: string;
-    avatar: string;
-    rating: number;
-    comment: string;
-    date: string;
-    helpful: number;
-  }[];
-  stats: {
-    totalStudents: number;
-    totalReviews: number;
-    averageRating: number;
-    completionRate: number;
-    lastUpdated: string;
-  };
-}
+import { mockCourses } from './mockCourses';
 
 // Helper function to generate course details
 function generateCourseDetails(

@@ -3,7 +3,6 @@ import { toast } from 'sonner';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import type { Course } from '@/assets/data/mockCourses';
 import { mockCourses, priceRanges } from '@/assets/data/mockCourses';
 import CourseFilters from '@/components/course/CourseFilters';
 import CourseHeader from '@/components/course/CourseHeader';
@@ -13,11 +12,12 @@ import NoResults from '@/components/course/NoResults';
 import PaginationWrapper from '@/components/course/PaginationWrapper';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useViewHistory } from '@/contexts/ViewHistoryContext';
+import type { Course } from '@/types';
 
 export default function CoursesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const { addToViewHistory } = useViewHistory();
+  const { addToHistory } = useViewHistory();
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -157,7 +157,7 @@ export default function CoursesPage() {
 
   const handleViewDetails = (course: Course) => {
     // Add to view history when user opens course details
-    addToViewHistory(course);
+    addToHistory(course);
 
     setSelectedCourse(course);
     setIsModalOpen(true);

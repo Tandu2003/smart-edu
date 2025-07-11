@@ -1,8 +1,8 @@
 import { Sparkles } from 'lucide-react';
 
-import type { Course } from '@/assets/data/mockCourses';
 import CourseCard from '@/components/course/CourseCard';
 import CourseCardSkeleton from '@/components/course/CourseCardSkeleton';
+import type { Course } from '@/types';
 import type { SuggestedCourse } from '@/types';
 
 interface AISuggestionsSectionProps {

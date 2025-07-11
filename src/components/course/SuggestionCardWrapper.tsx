@@ -1,6 +1,6 @@
 import { memo } from 'react';
 
-import type { Course } from '@/assets/data/mockCourses';
+import type { Course } from '@/types';
 import type { SuggestedCourse } from '@/types';
 
 import CourseCard from './CourseCard';

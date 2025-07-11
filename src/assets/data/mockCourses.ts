@@ -1,20 +1,4 @@
-export interface Course {
-  id: string;
-  title: string;
-  instructor: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  students: number;
-  duration: string;
-  image: string;
-  category: string;
-  isFavorite: boolean;
-  level?: 'Beginner' | 'Intermediate' | 'Advanced';
-  language?: string;
-  lastUpdated?: string;
-  certificate?: boolean;
-}
+import type { Course } from '@/types/course';
 
 export const mockCourses: Course[] = [
   // Lập trình - Frontend
