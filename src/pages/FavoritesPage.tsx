@@ -100,9 +100,10 @@ export default function FavoritesPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleToggleFavorite = () => {
-    if (selectedCourse) {
-      toggleFavorite(selectedCourse);
+  const handleToggleFavorite = (courseId: string) => {
+    const course = favorites.find((c) => c.id === courseId);
+    if (course) {
+      toggleFavorite(course);
     }
   };
 

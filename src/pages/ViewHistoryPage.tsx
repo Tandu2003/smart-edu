@@ -1,4 +1,4 @@
-import { Clock, Eye, Heart, Trash2 } from 'lucide-react';
+import { Clock, Eye, Trash2 } from 'lucide-react';
 
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -99,6 +99,13 @@ export default function ViewHistoryPage() {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleToggleFavorite = (courseId: string) => {
+    const course = viewHistory.find((c) => c.id === courseId);
+    if (course) {
+      toggleFavorite(course);
+    }
   };
 
   if (viewHistory.length === 0) {
@@ -262,11 +269,7 @@ export default function ViewHistoryPage() {
         course={selectedCourse}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onToggleFavorite={(courseId) => {
-          if (selectedCourse) {
-            toggleFavorite(selectedCourse);
-          }
-        }}
+        onToggleFavorite={handleToggleFavorite}
         isLoading={isModalLoading}
       />
     </div>
