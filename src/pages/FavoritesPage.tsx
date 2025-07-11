@@ -1,54 +1,29 @@
 import { toast } from 'sonner';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { mockFavoriteCourses } from '@/assets/data/mockFavorites';
+import type { Course } from '@/assets/data/mockCourses';
 import CourseModal from '@/components/course/CourseModal';
 import PaginationWrapper from '@/components/course/PaginationWrapper';
-import FavoriteCourseItemSkeleton from '@/components/favorites/FavoriteCourseItemSkeleton';
 import FavoritesBulkActions from '@/components/favorites/FavoritesBulkActions';
 import FavoritesEmptyState from '@/components/favorites/FavoritesEmptyState';
 import FavoritesHeader from '@/components/favorites/FavoritesHeader';
 import FavoritesList from '@/components/favorites/FavoritesList';
 import FavoritesStats from '@/components/favorites/FavoritesStats';
-import { Skeleton } from '@/components/ui/skeleton';
-
-interface Course {
-  id: string;
-  title: string;
-  instructor: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  students: number;
-  duration: string;
-  image: string;
-  category: string;
-  isFavorite: boolean;
-}
+import { useFavorites } from '@/contexts/FavoritesContext';
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
-  const [favoriteCourses, setFavoriteCourses] = useState<Course[]>([]);
+  const { favorites, removeFromFavorites, clearAllFavorites, toggleFavorite } = useFavorites();
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // Initialize favorites with loading delay
-  useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setFavoriteCourses(mockFavoriteCourses);
-      setIsLoading(false);
-    }, 400);
-  }, []);
-
-  const removeFromFavorites = (courseId: string) => {
-    setFavoriteCourses((prev) => prev.filter((course) => course.id !== courseId));
+  const handleRemoveFromFavorites = (courseId: string) => {
+    removeFromFavorites(courseId);
     // Reset to first page if current page becomes empty
     if (paginatedCourses.length === 1 && currentPage > 1) {
       setCurrentPage(currentPage - 1);
@@ -56,8 +31,8 @@ export default function FavoritesPage() {
     toast.success('Đã xóa khỏi danh sách yêu thích');
   };
 
-  const removeAllFavorites = () => {
-    setFavoriteCourses([]);
+  const handleRemoveAllFavorites = () => {
+    clearAllFavorites();
     setCurrentPage(1);
     toast.success('Đã xóa tất cả khỏi danh sách yêu thích');
   };
@@ -73,8 +48,8 @@ export default function FavoritesPage() {
     }).format(price);
   };
 
-  const totalValue = favoriteCourses.reduce((sum, course) => sum + course.price, 0);
-  const totalOriginalValue = favoriteCourses.reduce(
+  const totalValue = favorites.reduce((sum, course) => sum + course.price, 0);
+  const totalOriginalValue = favorites.reduce(
     (sum, course) => sum + (course.originalPrice || course.price),
     0
   );
@@ -109,10 +84,10 @@ export default function FavoritesPage() {
   const paginatedCourses = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    return favoriteCourses.slice(startIndex, endIndex);
-  }, [favoriteCourses, currentPage]);
+    return favorites.slice(startIndex, endIndex);
+  }, [favorites, currentPage]);
 
-  const totalPages = Math.ceil(favoriteCourses.length / itemsPerPage);
+  const totalPages = Math.ceil(favorites.length / itemsPerPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -120,53 +95,14 @@ export default function FavoritesPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FavoritesHeader />
-
-          {/* FavoritesStats Skeleton */}
-          <div className="bg-white rounded-lg p-6 shadow-sm mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <Skeleton className="h-8 w-16 mx-auto mb-2" />
-                <Skeleton className="h-4 w-24 mx-auto" />
-              </div>
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <Skeleton className="h-8 w-20 mx-auto mb-2" />
-                <Skeleton className="h-4 w-20 mx-auto" />
-              </div>
-              <div className="text-center p-4 bg-red-50 rounded-lg">
-                <Skeleton className="h-8 w-20 mx-auto mb-2" />
-                <Skeleton className="h-4 w-16 mx-auto" />
-              </div>
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <Skeleton className="h-8 w-20 mx-auto mb-2" />
-                <Skeleton className="h-4 w-16 mx-auto" />
-              </div>
-            </div>
-          </div>
-
-          {/* FavoritesList Skeleton */}
-          <div className="space-y-6">
-            {[...Array(6)].map((_, index) => (
-              <FavoriteCourseItemSkeleton key={index} />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <FavoritesHeader />
 
-        {favoriteCourses.length > 0 && (
+        {favorites.length > 0 && (
           <FavoritesStats
-            count={favoriteCourses.length}
+            count={favorites.length}
             totalValue={totalValue}
             totalSavings={totalSavings}
             totalOriginalValue={totalOriginalValue}
@@ -174,13 +110,13 @@ export default function FavoritesPage() {
           />
         )}
 
-        {favoriteCourses.length > 0 ? (
+        {favorites.length > 0 ? (
           <>
             <FavoritesList
               courses={paginatedCourses}
               formatPrice={formatPrice}
               onViewDetails={handleViewDetails}
-              onRemove={removeFromFavorites}
+              onRemove={handleRemoveFromFavorites}
             />
 
             {totalPages > 1 && (
@@ -190,7 +126,7 @@ export default function FavoritesPage() {
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
                   itemsPerPage={itemsPerPage}
-                  totalItems={favoriteCourses.length}
+                  totalItems={favorites.length}
                 />
               </div>
             )}
@@ -202,12 +138,12 @@ export default function FavoritesPage() {
           />
         )}
 
-        {favoriteCourses.length > 0 && (
+        {favorites.length > 0 && (
           <FavoritesBulkActions
-            count={favoriteCourses.length}
+            count={favorites.length}
             totalValue={totalValue}
             formatPrice={formatPrice}
-            onRemoveAll={removeAllFavorites}
+            onRemoveAll={handleRemoveAllFavorites}
             onBuyAll={buyAllFavorites}
           />
         )}
@@ -219,7 +155,9 @@ export default function FavoritesPage() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onToggleFavorite={(courseId) => {
-          removeFromFavorites(courseId);
+          if (selectedCourse) {
+            toggleFavorite(selectedCourse);
+          }
         }}
         isLoading={isModalLoading}
       />

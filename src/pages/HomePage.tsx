@@ -3,31 +3,16 @@ import { ArrowRight, Play } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
+import type { Course } from '@/assets/data/mockCourses';
 import { mockCourses } from '@/assets/data/mockCourses';
 import CourseCard from '@/components/course/CourseCard';
 import CourseCardSkeleton from '@/components/course/CourseCardSkeleton';
 import CourseModal from '@/components/course/CourseModal';
-
-interface Course {
-  id: string;
-  title: string;
-  instructor: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  students: number;
-  duration: string;
-  image: string;
-  category: string;
-  isFavorite: boolean;
-  level?: 'Beginner' | 'Intermediate' | 'Advanced';
-  language?: string;
-  lastUpdated?: string;
-  certificate?: boolean;
-}
+import { useFavorites } from '@/contexts/FavoritesContext';
 
 export default function HomePage() {
   const location = useLocation();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,14 +28,25 @@ export default function HomePage() {
     }, 400);
   }, []);
 
+  // Sync courses with favorites context
+  const coursesWithFavorites = useMemo(() => {
+    return courses.map((course) => ({
+      ...course,
+      isFavorite: isFavorite(course.id),
+    }));
+  }, [courses, isFavorite]);
+
   // Calculate real statistics from course data
   const statistics = useMemo(() => {
-    const totalCourses = courses.length;
-    const totalStudents = courses.reduce((sum, course) => sum + course.students, 0);
-    const uniqueInstructors = new Set(courses.map((course) => course.instructor)).size;
+    const totalCourses = coursesWithFavorites.length;
+    const totalStudents = coursesWithFavorites.reduce((sum, course) => sum + course.students, 0);
+    const uniqueInstructors = new Set(coursesWithFavorites.map((course) => course.instructor)).size;
     const averageRating =
-      courses.length > 0
-        ? (courses.reduce((sum, course) => sum + course.rating, 0) / courses.length).toFixed(1)
+      coursesWithFavorites.length > 0
+        ? (
+            coursesWithFavorites.reduce((sum, course) => sum + course.rating, 0) /
+            coursesWithFavorites.length
+          ).toFixed(1)
         : '0.0';
 
     return {
@@ -59,7 +55,7 @@ export default function HomePage() {
       uniqueInstructors,
       averageRating,
     };
-  }, [courses]);
+  }, [coursesWithFavorites]);
 
   // Handle hash navigation
   useEffect(() => {
@@ -79,7 +75,7 @@ export default function HomePage() {
   }, [location.hash]);
 
   // Get featured courses (top 8 by rating and students)
-  const featuredCourses = courses
+  const featuredCourses = coursesWithFavorites
     .sort((a, b) => {
       // Sort by rating first, then by number of students
       if (b.rating !== a.rating) {
@@ -89,12 +85,11 @@ export default function HomePage() {
     })
     .slice(0, 8);
 
-  const toggleFavorite = (courseId: string) => {
-    setCourses((prev) =>
-      prev.map((course) =>
-        course.id === courseId ? { ...course, isFavorite: !course.isFavorite } : course
-      )
-    );
+  const handleToggleFavorite = (courseId: string) => {
+    const course = coursesWithFavorites.find((c) => c.id === courseId);
+    if (course) {
+      toggleFavorite(course);
+    }
   };
 
   const handleViewDetails = (course: Course) => {
@@ -199,7 +194,7 @@ export default function HomePage() {
                   <CourseCard
                     key={course.id}
                     course={course}
-                    onToggleFavorite={toggleFavorite}
+                    onToggleFavorite={handleToggleFavorite}
                     onViewDetails={handleViewDetails}
                   />
                 ))}
@@ -245,7 +240,7 @@ export default function HomePage() {
         course={selectedCourse}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onToggleFavorite={toggleFavorite}
+        onToggleFavorite={handleToggleFavorite}
         isLoading={isModalLoading}
       />
     </div>

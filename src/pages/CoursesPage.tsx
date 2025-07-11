@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import type { Course } from '@/assets/data/mockCourses';
 import { mockCourses, priceRanges } from '@/assets/data/mockCourses';
 import CourseFilters from '@/components/course/CourseFilters';
 import CourseHeader from '@/components/course/CourseHeader';
@@ -8,23 +9,11 @@ import CourseList from '@/components/course/CourseList';
 import CourseModal from '@/components/course/CourseModal';
 import NoResults from '@/components/course/NoResults';
 import PaginationWrapper from '@/components/course/PaginationWrapper';
-
-interface Course {
-  id: string;
-  title: string;
-  instructor: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  students: number;
-  duration: string;
-  image: string;
-  category: string;
-  isFavorite: boolean;
-}
+import { useFavorites } from '@/contexts/FavoritesContext';
 
 export default function CoursesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -51,9 +40,17 @@ export default function CoursesPage() {
     }, 400);
   }, []);
 
+  // Sync courses with favorites context
+  const coursesWithFavorites = useMemo(() => {
+    return courses.map((course) => ({
+      ...course,
+      isFavorite: isFavorite(course.id),
+    }));
+  }, [courses, isFavorite]);
+
   // Filter courses when dependencies change
   useEffect(() => {
-    let filtered = courses;
+    let filtered = coursesWithFavorites;
 
     // Filter by search query
     if (searchQuery.trim()) {
@@ -79,7 +76,7 @@ export default function CoursesPage() {
     }
 
     setFilteredCourses(filtered);
-  }, [courses, searchQuery, selectedCategory, selectedPriceRange]);
+  }, [coursesWithFavorites, searchQuery, selectedCategory, selectedPriceRange]);
 
   // Update URL params helper
   const updateSearchParams = (updates: Record<string, string | number | boolean | null>) => {
@@ -109,12 +106,11 @@ export default function CoursesPage() {
     }
   }, [filteredCourses.length, currentPage]);
 
-  const toggleFavorite = (courseId: string) => {
-    setCourses((prev) =>
-      prev.map((course) =>
-        course.id === courseId ? { ...course, isFavorite: !course.isFavorite } : course
-      )
-    );
+  const handleToggleFavorite = (courseId: string) => {
+    const course = coursesWithFavorites.find((c) => c.id === courseId);
+    if (course) {
+      toggleFavorite(course);
+    }
   };
 
   const handleSearchChange = (query: string) => {
@@ -203,7 +199,7 @@ export default function CoursesPage() {
             <CourseList
               courses={currentCourses}
               viewMode={viewMode}
-              onToggleFavorite={toggleFavorite}
+              onToggleFavorite={handleToggleFavorite}
               onViewDetails={handleViewDetails}
               isLoading={false}
             />
@@ -227,7 +223,7 @@ export default function CoursesPage() {
           <CourseList
             courses={[]}
             viewMode={viewMode}
-            onToggleFavorite={toggleFavorite}
+            onToggleFavorite={handleToggleFavorite}
             onViewDetails={handleViewDetails}
             isLoading={true}
             skeletonCount={12}
@@ -240,7 +236,7 @@ export default function CoursesPage() {
         course={selectedCourse}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onToggleFavorite={toggleFavorite}
+        onToggleFavorite={handleToggleFavorite}
         isLoading={isModalLoading}
       />
     </div>
