@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 import { mockCourses } from '@/assets/data/mockCourses';
 import CourseCard from '@/components/course/CourseCard';
+import CourseCardSkeleton from '@/components/course/CourseCardSkeleton';
 import CourseModal from '@/components/course/CourseModal';
 
 interface Course {
@@ -27,9 +28,20 @@ interface Course {
 
 export default function HomePage() {
   const location = useLocation();
-  const [courses, setCourses] = useState<Course[]>(mockCourses);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isModalLoading, setIsModalLoading] = useState(false);
+
+  // Initialize courses with loading delay
+  useEffect(() => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setCourses(mockCourses);
+      setIsLoading(false);
+    }, 400);
+  }, []);
 
   // Calculate real statistics from course data
   const statistics = useMemo(() => {
@@ -88,10 +100,17 @@ export default function HomePage() {
   const handleViewDetails = (course: Course) => {
     setSelectedCourse(course);
     setIsModalOpen(true);
+    setIsModalLoading(true);
+
+    // Simulate loading delay for modal content
+    setTimeout(() => {
+      setIsModalLoading(false);
+    }, 400);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setIsModalLoading(false);
     setSelectedCourse(null);
   };
 
@@ -174,14 +193,16 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredCourses.map((course) => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                onToggleFavorite={toggleFavorite}
-                onViewDetails={handleViewDetails}
-              />
-            ))}
+            {isLoading
+              ? [...Array(8)].map((_, index) => <CourseCardSkeleton key={index} />)
+              : featuredCourses.map((course) => (
+                  <CourseCard
+                    key={course.id}
+                    course={course}
+                    onToggleFavorite={toggleFavorite}
+                    onViewDetails={handleViewDetails}
+                  />
+                ))}
           </div>
         </div>
       </section>
@@ -225,6 +246,7 @@ export default function HomePage() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onToggleFavorite={toggleFavorite}
+        isLoading={isModalLoading}
       />
     </div>
   );
