@@ -155,8 +155,9 @@ export default function FavoritesPage() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onToggleFavorite={(courseId) => {
-          if (selectedCourse) {
-            toggleFavorite(selectedCourse);
+          const course = favorites.find((c) => c.id === courseId);
+          if (course) {
+            toggleFavorite(course);
           }
         }}
         isLoading={isModalLoading}
