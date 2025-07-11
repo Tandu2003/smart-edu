@@ -6,6 +6,7 @@ import CourseHeader from '@/components/course/CourseHeader';
 import CourseList from '@/components/course/CourseList';
 import CourseModal from '@/components/course/CourseModal';
 import NoResults from '@/components/course/NoResults';
+import PaginationWrapper from '@/components/course/PaginationWrapper';
 
 interface Course {
   id: string;
@@ -31,6 +32,10 @@ export default function CoursesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12; // Show 12 courses per page
 
   useEffect(() => {
     let filtered = courses;
@@ -59,7 +64,14 @@ export default function CoursesPage() {
     }
 
     setFilteredCourses(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
   }, [courses, searchQuery, selectedCategory, selectedPriceRange]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentCourses = filteredCourses.slice(startIndex, endIndex);
 
   const toggleFavorite = (courseId: string) => {
     setCourses((prev) =>
@@ -83,6 +95,12 @@ export default function CoursesPage() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedCourse(null);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -113,12 +131,25 @@ export default function CoursesPage() {
 
         {/* Courses List */}
         {filteredCourses.length > 0 ? (
-          <CourseList
-            courses={filteredCourses}
-            viewMode={viewMode}
-            onToggleFavorite={toggleFavorite}
-            onViewDetails={handleViewDetails}
-          />
+          <>
+            <CourseList
+              courses={currentCourses}
+              viewMode={viewMode}
+              onToggleFavorite={toggleFavorite}
+              onViewDetails={handleViewDetails}
+            />
+
+            {/* Pagination */}
+            <div className="mt-12">
+              <PaginationWrapper
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                itemsPerPage={itemsPerPage}
+                totalItems={filteredCourses.length}
+              />
+            </div>
+          </>
         ) : (
           <NoResults onClearFilters={clearFilters} />
         )}
