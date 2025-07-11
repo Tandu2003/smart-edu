@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { mockCourses, priceRanges } from '@/assets/data/mockCourses';
 import CourseFilters from '@/components/course/CourseFilters';
@@ -23,20 +24,22 @@ interface Course {
 }
 
 export default function CoursesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [courses, setCourses] = useState<Course[]>([]);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Tất cả');
-  const [selectedPriceRange, setSelectedPriceRange] = useState(0);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showFilters, setShowFilters] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalLoading, setIsModalLoading] = useState(false);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+  // Get values from URL params with defaults
+  const searchQuery = searchParams.get('search') || '';
+  const selectedCategory = searchParams.get('category') || 'Tất cả';
+  const selectedPriceRange = parseInt(searchParams.get('priceRange') || '0');
+  const viewMode = (searchParams.get('view') as 'grid' | 'list') || 'grid';
+  const currentPage = parseInt(searchParams.get('page') || '1');
+  const showFilters = searchParams.get('filters') === 'true';
+
   const itemsPerPage = 12; // Show 12 courses per page
 
   // Initialize courses with loading delay
@@ -44,11 +47,11 @@ export default function CoursesPage() {
     setIsLoading(true);
     setTimeout(() => {
       setCourses(mockCourses);
-      setFilteredCourses(mockCourses);
       setIsLoading(false);
     }, 400);
   }, []);
 
+  // Filter courses when dependencies change
   useEffect(() => {
     let filtered = courses;
 
@@ -76,14 +79,35 @@ export default function CoursesPage() {
     }
 
     setFilteredCourses(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
   }, [courses, searchQuery, selectedCategory, selectedPriceRange]);
+
+  // Update URL params helper
+  const updateSearchParams = (updates: Record<string, string | number | boolean | null>) => {
+    const newParams = new URLSearchParams(searchParams);
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === '' || value === 0 || value === false) {
+        newParams.delete(key);
+      } else {
+        newParams.set(key, String(value));
+      }
+    });
+
+    setSearchParams(newParams);
+  };
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentCourses = filteredCourses.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change but keep other params
+  useEffect(() => {
+    if (currentPage > 1 && filteredCourses.length <= (currentPage - 1) * itemsPerPage) {
+      updateSearchParams({ page: null });
+    }
+  }, [filteredCourses.length, currentPage]);
 
   const toggleFavorite = (courseId: string) => {
     setCourses((prev) =>
@@ -93,10 +117,28 @@ export default function CoursesPage() {
     );
   };
 
+  const handleSearchChange = (query: string) => {
+    updateSearchParams({ search: query, page: null });
+  };
+
+  const handleCategoryChange = (category: string) => {
+    updateSearchParams({ category: category === 'Tất cả' ? null : category, page: null });
+  };
+
+  const handlePriceRangeChange = (priceRange: number) => {
+    updateSearchParams({ priceRange: priceRange === 0 ? null : priceRange, page: null });
+  };
+
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    updateSearchParams({ view: mode === 'grid' ? null : mode });
+  };
+
+  const handleToggleFilters = () => {
+    updateSearchParams({ filters: !showFilters ? true : null });
+  };
+
   const clearFilters = () => {
-    setSearchQuery('');
-    setSelectedCategory('Tất cả');
-    setSelectedPriceRange(0);
+    setSearchParams({});
   };
 
   const handleViewDetails = (course: Course) => {
@@ -117,7 +159,7 @@ export default function CoursesPage() {
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    updateSearchParams({ page: page === 1 ? null : page });
     // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -129,15 +171,15 @@ export default function CoursesPage() {
 
         <CourseFilters
           searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          onSearchChange={handleSearchChange}
           selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
+          onCategoryChange={handleCategoryChange}
           selectedPriceRange={selectedPriceRange}
-          onPriceRangeChange={setSelectedPriceRange}
+          onPriceRangeChange={handlePriceRangeChange}
           viewMode={viewMode}
-          onViewModeChange={setViewMode}
+          onViewModeChange={handleViewModeChange}
           showFilters={showFilters}
-          onToggleFilters={() => setShowFilters(!showFilters)}
+          onToggleFilters={handleToggleFilters}
           onClearFilters={clearFilters}
         />
 
@@ -146,6 +188,11 @@ export default function CoursesPage() {
           <div className="mb-6">
             <p className="text-gray-600">
               Tìm thấy <span className="font-semibold">{filteredCourses.length}</span> khóa học
+              {searchQuery && (
+                <span className="ml-2 text-sm">
+                  cho "<span className="font-medium">{searchQuery}</span>"
+                </span>
+              )}
             </p>
           </div>
         )}
@@ -162,15 +209,17 @@ export default function CoursesPage() {
             />
 
             {/* Pagination */}
-            <div className="mt-12">
-              <PaginationWrapper
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-                itemsPerPage={itemsPerPage}
-                totalItems={filteredCourses.length}
-              />
-            </div>
+            {totalPages > 1 && (
+              <div className="mt-12">
+                <PaginationWrapper
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={filteredCourses.length}
+                />
+              </div>
+            )}
           </>
         ) : !isLoading && filteredCourses.length === 0 ? (
           <NoResults onClearFilters={clearFilters} />

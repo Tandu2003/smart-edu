@@ -228,7 +228,7 @@ export default function HomePage() {
             ].map((category, index) => (
               <Link
                 key={index}
-                to={`/courses?category=${category.name}`}
+                to={`/courses?category=${encodeURIComponent(category.name)}`}
                 className="card p-6 text-center hover:shadow-lg transition-shadow duration-200"
               >
                 <div className="text-4xl mb-3">{category.icon}</div>

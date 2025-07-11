@@ -1,24 +1,45 @@
 import { Menu, Search } from 'lucide-react';
 
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 interface HeaderProps {
-  onSearch: (query: string) => void;
+  onSearch?: (query: string) => void;
 }
 
 export default function Header({ onSearch }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Sync search input with URL params when on courses page
+  useEffect(() => {
+    if (location.pathname === '/courses') {
+      const urlSearchQuery = searchParams.get('search') || '';
+      setSearchQuery(urlSearchQuery);
+    } else {
+      setSearchQuery('');
+    }
+  }, [location.pathname, searchParams]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch(searchQuery);
+    if (!searchQuery.trim()) return;
+
+    // If onSearch callback is provided (for CoursesPage), use it
+    if (onSearch && location.pathname === '/courses') {
+      onSearch(searchQuery);
+    } else {
+      // Otherwise, navigate to courses page with search query
+      navigate(`/courses?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+
     setIsSheetOpen(false);
   };
 

@@ -8,14 +8,9 @@ import FavoritesPage from '@/pages/FavoritesPage';
 import HomePage from '@/pages/HomePage';
 
 function App() {
-  const handleSearch = (query: string) => {
-    // Handle global search - could navigate to courses page with search query
-    console.log('Global search:', query);
-  };
-
   return (
     <Router>
-      <Layout onSearch={handleSearch}>
+      <Layout>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/courses" element={<CoursesPage />} />
