@@ -17,6 +17,7 @@ const HomePage = lazy(() => import('@/pages/HomePage'));
 const CoursesPage = lazy(() => import('@/pages/CoursesPage'));
 const FavoritesPage = lazy(() => import('@/pages/FavoritesPage'));
 const ViewHistoryPage = lazy(() => import('@/pages/ViewHistoryPage'));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -55,6 +56,7 @@ function App() {
                       <Route path="/courses" element={<CoursesPage />} />
                       <Route path="/favorites" element={<FavoritesPage />} />
                       <Route path="/history" element={<ViewHistoryPage />} />
+                      <Route path="*" element={<NotFoundPage />} />
                     </Routes>
                   </Suspense>
                 </ErrorBoundary>

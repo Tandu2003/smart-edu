@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -421,10 +422,19 @@ export default function CourseModal({
       <DialogContent className="!max-w-4xl w-full h-[90vh] flex flex-col rounded-xl p-0">
         <DialogHeader className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl z-10 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-gray-900">
-              {isLoading ? <Skeleton className="h-8 w-80" /> : course?.title}
-            </DialogTitle>
-            <div className="flex items-center space-x-2">
+            <div className="flex-1">
+              <DialogTitle className="text-2xl font-bold text-gray-900">
+                {isLoading ? <Skeleton className="h-8 w-80" /> : course?.title}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-gray-600 mt-1">
+                {isLoading ? (
+                  <Skeleton className="h-4 w-60" />
+                ) : (
+                  `Xem chi tiết khóa học ${course?.title || ''} - ${course?.instructor || ''}`
+                )}
+              </DialogDescription>
+            </div>
+            <div className="flex items-center space-x-2 flex-shrink-0">
               {isLoading ? (
                 <>
                   <Skeleton className="w-8 h-8 rounded-full" />
