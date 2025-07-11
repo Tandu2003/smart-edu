@@ -3,6 +3,7 @@ import { Toaster } from 'sonner';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
 import Layout from '@/components/layout/Layout';
+import HomePage from '@/pages/HomePage';
 
 function App() {
   const handleSearch = (query: string) => {
@@ -13,9 +14,9 @@ function App() {
   return (
     <Router>
       <Layout onSearch={handleSearch}>
-        <div className="flex flex-col items-center justify-center h-screen">
-          <h1 className="text-4xl font-bold">Hello World</h1>
-        </div>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+        </Routes>
       </Layout>
       <Toaster position="top-right" richColors closeButton duration={3000} />
     </Router>
