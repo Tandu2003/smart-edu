@@ -9,15 +9,9 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, onSearch }: LayoutProps) {
-  const handleSearch = (query: string) => {
-    if (onSearch) {
-      onSearch(query);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header onSearch={handleSearch} />
+      <Header onSearch={onSearch} />
       <main className="flex-1">{children}</main>
       <Footer />
     </div>
