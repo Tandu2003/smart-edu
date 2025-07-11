@@ -44,6 +44,12 @@ export default function CoursesPage() {
     }, 400);
   }, []);
 
+  // Set page title and scroll to top
+  useEffect(() => {
+    document.title = 'Khóa học - SmartEdu';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   // Sync courses with favorites context
   const coursesWithFavorites = useMemo(() => {
     return courses.map((course) => ({
