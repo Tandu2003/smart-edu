@@ -1,15 +1,17 @@
-import { ArrowRight, Play } from 'lucide-react';
-
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 import type { Course } from '@/assets/data/mockCourses';
 import { mockCourses } from '@/assets/data/mockCourses';
-import CourseCard from '@/components/course/CourseCard';
-import CourseCardSkeleton from '@/components/course/CourseCardSkeleton';
 import CourseModal from '@/components/course/CourseModal';
+import AISuggestionsSection from '@/components/home/AISuggestionsSection';
+import CategoriesSection from '@/components/home/CategoriesSection';
+import FeaturedCoursesSection from '@/components/home/FeaturedCoursesSection';
+import HeroSection from '@/components/home/HeroSection';
+import StatsSection from '@/components/home/StatsSection';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { useViewHistory } from '@/contexts/ViewHistoryContext';
+import type { Statistics, SuggestedCourse } from '@/types';
 
 export default function HomePage() {
   const location = useLocation();
@@ -20,6 +22,9 @@ export default function HomePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalLoading, setIsModalLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<SuggestedCourse[]>([]);
+  const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Initialize courses with loading delay
   useEffect(() => {
@@ -39,7 +44,7 @@ export default function HomePage() {
   }, [courses, isFavorite]);
 
   // Calculate real statistics from course data
-  const statistics = useMemo(() => {
+  const statistics: Statistics = useMemo(() => {
     const totalCourses = coursesWithFavorites.length;
     const totalStudents = coursesWithFavorites.reduce((sum, course) => sum + course.students, 0);
     const uniqueInstructors = new Set(coursesWithFavorites.map((course) => course.instructor)).size;
@@ -114,133 +119,179 @@ export default function HomePage() {
     setSelectedCourse(null);
   };
 
+  const handleAISuggestions = async () => {
+    setIsSuggestionsLoading(true);
+    setShowSuggestions(true);
+
+    // Simulate API call to /api/suggestions?userId=xxx
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate API delay
+
+      // Generate suggestions based on user behavior
+      const suggestedCourses = generateSmartSuggestions();
+      setSuggestions(suggestedCourses);
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+      setSuggestions([]);
+    } finally {
+      setIsSuggestionsLoading(false);
+    }
+  };
+
+  const generateSmartSuggestions = (): SuggestedCourse[] => {
+    // Get user behavior data
+    const favoriteCourses = coursesWithFavorites.filter((course) => course.isFavorite);
+    const viewedCourses = JSON.parse(localStorage.getItem('viewHistory') || '[]');
+
+    // Analyze user preferences
+    const favoriteCategories = [...new Set(favoriteCourses.map((course) => course.category))];
+    const viewedCategories = [...new Set(viewedCourses.map((item: any) => item.category))];
+    const preferredCategories = [...new Set([...favoriteCategories, ...viewedCategories])];
+
+    const favoriteInstructors = [...new Set(favoriteCourses.map((course) => course.instructor))];
+    const viewedInstructors = [...new Set(viewedCourses.map((item: any) => item.instructor))];
+    const preferredInstructors = [...new Set([...favoriteInstructors, ...viewedInstructors])];
+
+    // Get courses user hasn't interacted with
+    const interactedCourseIds = new Set([
+      ...favoriteCourses.map((c) => c.id),
+      ...viewedCourses.map((item: any) => item.id),
+    ]);
+
+    const candidateCourses = coursesWithFavorites.filter(
+      (course) => !interactedCourseIds.has(course.id)
+    );
+
+    // Score and rank courses
+    const scoredCourses = candidateCourses.map((course) => {
+      let matchScore = 60; // Base score
+      let reason = 'Khóa học phù hợp với sở thích của bạn';
+
+      // Category matching (high weight)
+      if (preferredCategories.includes(course.category)) {
+        matchScore += 25;
+        reason = `Bạn đã quan tâm đến ${course.category}`;
+      }
+
+      // Instructor matching (medium weight)
+      if (preferredInstructors.includes(course.instructor)) {
+        matchScore += 15;
+        reason = `Giảng viên ${course.instructor} mà bạn đã theo dõi`;
+      }
+
+      // High rating bonus (low weight)
+      if (course.rating >= 4.5) {
+        matchScore += 10;
+      }
+
+      // Popular course bonus (low weight)
+      if (course.students > 1000) {
+        matchScore += 5;
+      }
+
+      // Price range preference (if user has favorites, analyze their price range)
+      if (favoriteCourses.length > 0) {
+        const avgFavoritePrice =
+          favoriteCourses.reduce((sum, c) => sum + c.price, 0) / favoriteCourses.length;
+        const priceDiff = Math.abs(course.price - avgFavoritePrice) / avgFavoritePrice;
+        if (priceDiff < 0.3) {
+          // Within 30% of average favorite price
+          matchScore += 8;
+        }
+      }
+
+      // Specific recommendations based on behavior patterns
+      if (favoriteCategories.includes('Lập trình') && course.category === 'Lập trình') {
+        if (
+          course.title.toLowerCase().includes('react') ||
+          course.title.toLowerCase().includes('javascript')
+        ) {
+          matchScore += 10;
+          reason = 'Phù hợp với sở thích lập trình frontend của bạn';
+        }
+      }
+
+      if (favoriteCategories.includes('Thiết kế') && course.category === 'Thiết kế') {
+        matchScore += 10;
+        reason = 'Bổ sung kỹ năng thiết kế cho portfolio của bạn';
+      }
+
+      if (favoriteCategories.includes('Marketing') && course.category === 'Kinh doanh') {
+        matchScore += 8;
+        reason = 'Kết hợp Marketing và Kinh doanh để phát triển toàn diện';
+      }
+
+      return {
+        id: course.id,
+        title: course.title,
+        instructor: course.instructor,
+        price: course.price,
+        image: course.image,
+        reason,
+        matchScore: Math.min(matchScore, 99), // Cap at 99%
+        category: course.category,
+        level: course.level || 'Beginner',
+      };
+    });
+
+    // Sort by match score and return top 3-4 suggestions
+    const topSuggestions = scoredCourses
+      .sort((a, b) => b.matchScore - a.matchScore)
+      .slice(0, Math.floor(Math.random() * 2) + 3); // 3-4 suggestions
+
+    // If no behavioral data, suggest popular courses from different categories
+    if (
+      topSuggestions.length === 0 ||
+      (favoriteCourses.length === 0 && viewedCourses.length === 0)
+    ) {
+      const popularCourses = coursesWithFavorites
+        .sort((a, b) => b.rating * b.students - a.rating * a.students)
+        .slice(0, 4)
+        .map((course) => ({
+          id: course.id,
+          title: course.title,
+          instructor: course.instructor,
+          price: course.price,
+          image: course.image,
+          reason: 'Khóa học phổ biến được nhiều người yêu thích',
+          matchScore: 75,
+          category: course.category,
+          level: course.level || 'Beginner',
+        }));
+
+      return popularCourses;
+    }
+
+    return topSuggestions;
+  };
+
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Học tập thông minh với <span className="text-yellow-300">AI</span>
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-              Khám phá hàng nghìn khóa học chất lượng cao với gợi ý thông minh từ AI, giúp bạn tìm
-              ra con đường học tập phù hợp nhất.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/courses"
-                className="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-3"
-              >
-                Khám phá khóa học
-              </Link>
-              <button className="btn-secondary bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-3">
-                <Play className="inline mr-2" size={20} />
-                Xem demo
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection
+        onAISuggestions={handleAISuggestions}
+        isSuggestionsLoading={isSuggestionsLoading}
+      />
 
-      {/* Stats Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
-                {statistics.totalCourses.toLocaleString()}+
-              </div>
-              <div className="text-gray-600">Khóa học</div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
-                {statistics.totalStudents.toLocaleString()}+
-              </div>
-              <div className="text-gray-600">Học viên</div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
-                {statistics.uniqueInstructors}+
-              </div>
-              <div className="text-gray-600">Giảng viên</div>
-            </div>
-            <div>
-              <div className="text-3xl md:text-4xl font-bold text-blue-600 mb-2">
-                {statistics.averageRating}
-              </div>
-              <div className="text-gray-600">Đánh giá trung bình</div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <AISuggestionsSection
+        showSuggestions={showSuggestions}
+        isSuggestionsLoading={isSuggestionsLoading}
+        suggestions={suggestions}
+        coursesWithFavorites={coursesWithFavorites}
+        onToggleFavorite={handleToggleFavorite}
+        onViewDetails={handleViewDetails}
+      />
 
-      {/* Featured Courses */}
-      <section id="featured-courses" className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Khóa học nổi bật</h2>
-              <p className="text-gray-600">Những khóa học được yêu thích nhất</p>
-            </div>
-            <Link
-              to="/courses"
-              className="flex items-center text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Xem tất cả
-              <ArrowRight className="ml-2" size={20} />
-            </Link>
-          </div>
+      <StatsSection statistics={statistics} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {isLoading
-              ? [...Array(8)].map((_, index) => <CourseCardSkeleton key={index} />)
-              : featuredCourses.map((course) => (
-                  <CourseCard
-                    key={course.id}
-                    course={course}
-                    onToggleFavorite={handleToggleFavorite}
-                    onViewDetails={handleViewDetails}
-                  />
-                ))}
-          </div>
-        </div>
-      </section>
+      <FeaturedCoursesSection
+        isLoading={isLoading}
+        featuredCourses={featuredCourses}
+        onToggleFavorite={handleToggleFavorite}
+        onViewDetails={handleViewDetails}
+      />
 
-      {/* Categories Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Danh mục khóa học</h2>
-            <p className="text-lg text-gray-600">Chọn lĩnh vực bạn quan tâm</p>
-          </div>
+      <CategoriesSection />
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { name: 'Lập trình', icon: '💻', count: '2,500+' },
-              { name: 'Ngoại ngữ', icon: '🌍', count: '1,800+' },
-              { name: 'Marketing', icon: '📈', count: '1,200+' },
-              { name: 'Thiết kế', icon: '🎨', count: '900+' },
-              { name: 'Kinh doanh', icon: '💼', count: '1,500+' },
-              { name: 'Âm nhạc', icon: '🎵', count: '600+' },
-              { name: 'Sức khỏe', icon: '🏃‍♂️', count: '400+' },
-              { name: 'Khác', icon: '📚', count: '1,000+' },
-            ].map((category, index) => (
-              <Link
-                key={index}
-                to={`/courses?category=${encodeURIComponent(category.name)}`}
-                className="card p-6 text-center hover:shadow-lg transition-shadow duration-200"
-              >
-                <div className="text-4xl mb-3">{category.icon}</div>
-                <h3 className="font-semibold text-gray-900 mb-1">{category.name}</h3>
-                <p className="text-sm text-gray-600">{category.count} khóa học</p>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Course Modal */}
       <CourseModal
         course={selectedCourse}
         isOpen={isModalOpen}
