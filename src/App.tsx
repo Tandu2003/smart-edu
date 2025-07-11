@@ -4,8 +4,11 @@ import { Suspense, lazy } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
 import ErrorBoundary from '@/components/ErrorBoundary';
+import ChatBot from '@/components/chatbot/ChatBot';
+import FloatingChatButton from '@/components/chatbot/FloatingChatButton';
 import Layout from '@/components/layout/Layout';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ChatBotProvider } from '@/contexts/ChatBotContext';
 import { FavoritesProvider } from '@/contexts/FavoritesContext';
 import { ViewHistoryProvider } from '@/contexts/ViewHistoryContext';
 
@@ -41,23 +44,30 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <FavoritesProvider>
-          <ViewHistoryProvider>
-            <Layout>
-              <ErrorBoundary>
-                <Suspense fallback={<LoadingFallback />}>
-                  <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/courses" element={<CoursesPage />} />
-                    <Route path="/favorites" element={<FavoritesPage />} />
-                    <Route path="/history" element={<ViewHistoryPage />} />
-                  </Routes>
-                </Suspense>
-              </ErrorBoundary>
-            </Layout>
-            <Toaster position="top-right" richColors closeButton duration={3000} />
-          </ViewHistoryProvider>
-        </FavoritesProvider>
+        <ChatBotProvider>
+          <FavoritesProvider>
+            <ViewHistoryProvider>
+              <Layout>
+                <ErrorBoundary>
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Routes>
+                      <Route path="/" element={<HomePage />} />
+                      <Route path="/courses" element={<CoursesPage />} />
+                      <Route path="/favorites" element={<FavoritesPage />} />
+                      <Route path="/history" element={<ViewHistoryPage />} />
+                    </Routes>
+                  </Suspense>
+                </ErrorBoundary>
+              </Layout>
+
+              {/* ChatBot Components */}
+              <FloatingChatButton />
+              <ChatBot />
+
+              <Toaster position="top-right" richColors closeButton duration={3000} />
+            </ViewHistoryProvider>
+          </FavoritesProvider>
+        </ChatBotProvider>
       </Router>
     </ErrorBoundary>
   );
