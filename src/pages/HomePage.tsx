@@ -37,6 +37,12 @@ export default function HomePage() {
     }, 400);
   }, []);
 
+  // Set page title and scroll to top
+  useEffect(() => {
+    document.title = 'SmartEdu - Học tập thông minh với AI';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   // Sync courses with favorites context
   const coursesWithFavorites = useMemo(() => {
     return courses.map((course) => ({

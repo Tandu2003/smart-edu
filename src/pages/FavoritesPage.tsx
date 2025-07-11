@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import type { Course } from '@/assets/data/mockCourses';
@@ -23,6 +23,12 @@ export default function FavoritesPage() {
   const [isModalLoading, setIsModalLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+
+  // Set page title and scroll to top
+  useEffect(() => {
+    document.title = 'Danh sách yêu thích - SmartEdu';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const handleRemoveFromFavorites = (courseId: string) => {
     removeFromFavorites(courseId);
