@@ -141,7 +141,14 @@ export default function HomePage() {
   const generateSmartSuggestions = (): SuggestedCourse[] => {
     // Get user behavior data
     const favoriteCourses = coursesWithFavorites.filter((course) => course.isFavorite);
-    const viewedCourses = JSON.parse(localStorage.getItem('viewHistory') || '[]');
+    const viewedCourses = JSON.parse(localStorage.getItem('smart-edu-view-history') || '[]');
+
+    console.log('🎯 AI Behavior Analysis:', {
+      favorites: favoriteCourses.length,
+      viewed: viewedCourses.length,
+      favoriteCategories: favoriteCourses.map((c) => c.category),
+      viewedCategories: viewedCourses.map((c: any) => c.category),
+    });
 
     // Analyze user preferences
     const favoriteCategories = [...new Set(favoriteCourses.map((course) => course.category))];
@@ -162,64 +169,121 @@ export default function HomePage() {
       (course) => !interactedCourseIds.has(course.id)
     );
 
-    // Score and rank courses
-    const scoredCourses = candidateCourses.map((course) => {
+    // Simple behavior-focused scoring
+    const scoredCourses = candidateCourses.map((course, index) => {
       let matchScore = 60; // Base score
-      let reason = 'Khóa học phù hợp với sở thích của bạn';
+      const reasons: string[] = [];
 
-      // Category matching (high weight)
+      // PRIMARY: Category from favorites/viewed (HUGE bonus)
       if (preferredCategories.includes(course.category)) {
-        matchScore += 25;
-        reason = `Bạn đã quan tâm đến ${course.category}`;
+        const categoryBonus = 35;
+        matchScore += categoryBonus;
+
+        // Check if from favorites or view history
+        const fromFavorites = favoriteCategories.includes(course.category);
+        const fromViewed = viewedCategories.includes(course.category);
+
+        if (fromFavorites && fromViewed) {
+          reasons.push(`💕 Đã yêu thích và xem nhiều ${course.category}`);
+        } else if (fromFavorites) {
+          reasons.push(`⭐ Đã yêu thích các khóa ${course.category}`);
+        } else if (fromViewed) {
+          reasons.push(`👀 Đã xem nhiều khóa ${course.category}`);
+        }
       }
 
-      // Instructor matching (medium weight)
+      // SECONDARY: Instructor from favorites/viewed
       if (preferredInstructors.includes(course.instructor)) {
-        matchScore += 15;
-        reason = `Giảng viên ${course.instructor} mà bạn đã theo dõi`;
+        const instructorBonus = 20;
+        matchScore += instructorBonus;
+
+        // Check if from favorites or view history
+        const fromFavorites = favoriteInstructors.includes(course.instructor);
+        const fromViewed = viewedInstructors.includes(course.instructor);
+        const instructorName = course.instructor.split(' ')[0];
+
+        if (fromFavorites && fromViewed) {
+          reasons.push(`🔥 Đã theo dõi và yêu thích GV ${instructorName}`);
+        } else if (fromFavorites) {
+          reasons.push(`💖 Đã yêu thích khóa của GV ${instructorName}`);
+        } else if (fromViewed) {
+          reasons.push(`📚 Đã xem khóa của GV ${instructorName}`);
+        }
       }
 
-      // High rating bonus (low weight)
-      if (course.rating >= 4.5) {
-        matchScore += 10;
-      }
-
-      // Popular course bonus (low weight)
-      if (course.students > 1000) {
-        matchScore += 5;
-      }
-
-      // Price range preference (if user has favorites, analyze their price range)
-      if (favoriteCourses.length > 0) {
+      // BEHAVIOR: Budget preference từ favorites
+      if (favoriteCourses.length > 0 && reasons.length === 0) {
         const avgFavoritePrice =
           favoriteCourses.reduce((sum, c) => sum + c.price, 0) / favoriteCourses.length;
         const priceDiff = Math.abs(course.price - avgFavoritePrice) / avgFavoritePrice;
-        if (priceDiff < 0.3) {
-          // Within 30% of average favorite price
-          matchScore += 8;
+        if (priceDiff < 0.2) {
+          matchScore += 15;
+          const avgPriceK = Math.round(avgFavoritePrice / 1000);
+          reasons.push(`💰 Giá như khóa đã yêu thích (~${avgPriceK}K)`);
         }
       }
 
-      // Specific recommendations based on behavior patterns
-      if (favoriteCategories.includes('Lập trình') && course.category === 'Lập trình') {
-        if (
-          course.title.toLowerCase().includes('react') ||
-          course.title.toLowerCase().includes('javascript')
-        ) {
+      // BEHAVIOR: Learning level pattern từ favorites
+      if (favoriteCourses.length > 0 && reasons.length === 0) {
+        const favoriteLevels = favoriteCourses.map((c) => c.level || 'Beginner');
+        const mostCommonLevel = favoriteLevels.reduce((a, b, _i, arr) =>
+          arr.filter((v) => v === a).length >= arr.filter((v) => v === b).length ? a : b
+        );
+
+        if (course.level === mostCommonLevel) {
           matchScore += 10;
-          reason = 'Phù hợp với sở thích lập trình frontend của bạn';
+          const levelMap: { [key: string]: string } = {
+            Beginner: 'Cơ bản',
+            Intermediate: 'Trung cấp',
+            Advanced: 'Nâng cao',
+          };
+          reasons.push(`🎯 Cùng level ${levelMap[mostCommonLevel] || mostCommonLevel} đã học`);
         }
       }
 
-      if (favoriteCategories.includes('Thiết kế') && course.category === 'Thiết kế') {
-        matchScore += 10;
-        reason = 'Bổ sung kỹ năng thiết kế cho portfolio của bạn';
+      // BEHAVIOR: Instructor từ view history (nếu chưa có reason)
+      if (viewedInstructors.length > 0 && reasons.length === 0) {
+        if (viewedInstructors.includes(course.instructor)) {
+          matchScore += 12;
+          reasons.push(`📖 Đã xem khóa của ${course.instructor.split(' ')[0]}`);
+        }
       }
 
-      if (favoriteCategories.includes('Marketing') && course.category === 'Kinh doanh') {
-        matchScore += 8;
-        reason = 'Kết hợp Marketing và Kinh doanh để phát triển toàn diện';
+      // FALLBACK: Nếu không có behavior data, gợi ý dựa trên quality
+      if (reasons.length === 0) {
+        if (favoriteCourses.length === 0 && viewedCourses.length === 0) {
+          // User mới hoàn toàn - suggest popular/quality courses
+          if (course.rating >= 4.5 && course.students > 1000) {
+            matchScore += 8;
+            reasons.push(`🌟 Khóa hot dành cho người mới bắt đầu`);
+          } else if (course.rating >= 4.5) {
+            matchScore += 6;
+            reasons.push(`⭐ Đánh giá xuất sắc ${course.rating}/5`);
+          } else if (course.students > 1500) {
+            matchScore += 5;
+            reasons.push(`👥 ${course.students} học viên đã tham gia`);
+          } else {
+            reasons.push(`📚 Khóa học chất lượng được đề xuất`);
+          }
+        } else {
+          // Có behavior nhưng course này không match → suggest diversity
+          if (course.rating >= 4.5) {
+            matchScore += 5;
+            reasons.push(`🔄 Mở rộng thêm lĩnh vực mới (${course.rating}⭐)`);
+          } else if (course.price < 300000) {
+            matchScore += 4;
+            reasons.push(`💝 Gợi ý mới với giá tốt`);
+          } else {
+            reasons.push(`🎨 Khám phá lĩnh vực ${course.category}`);
+          }
+        }
       }
+
+      // Show only the first/main reason
+      const finalReason = reasons[0] || '📚 Khóa học chất lượng';
+
+      // Simple variation to avoid ties
+      const finalScore = matchScore + index * 0.2;
 
       return {
         id: course.id,
@@ -227,42 +291,62 @@ export default function HomePage() {
         instructor: course.instructor,
         price: course.price,
         image: course.image,
-        reason,
-        matchScore: Math.min(matchScore, 99), // Cap at 99%
+        reason: finalReason,
+        matchScore: finalScore,
         category: course.category,
         level: course.level || 'Beginner',
       };
     });
 
-    // Sort by match score and return top 3-4 suggestions
-    const topSuggestions = scoredCourses
-      .sort((a, b) => b.matchScore - a.matchScore)
-      .slice(0, Math.floor(Math.random() * 2) + 3); // 3-4 suggestions
+    // Sort by match score and get top candidates
+    const sortedCourses = scoredCourses.sort((a, b) => b.matchScore - a.matchScore);
 
-    // If no behavioral data, suggest popular courses from different categories
-    if (
-      topSuggestions.length === 0 ||
-      (favoriteCourses.length === 0 && viewedCourses.length === 0)
-    ) {
+    // Ensure we have at least 4 suggestions
+    let finalSuggestions = sortedCourses.slice(0, 4);
+
+    // If not enough courses, add popular ones to reach 4
+    if (finalSuggestions.length < 4) {
+      const remainingNeeded = 4 - finalSuggestions.length;
+      const usedIds = new Set(finalSuggestions.map((s: SuggestedCourse) => s.id));
+
       const popularCourses = coursesWithFavorites
+        .filter((course) => !usedIds.has(course.id))
         .sort((a, b) => b.rating * b.students - a.rating * a.students)
-        .slice(0, 4)
+        .slice(0, remainingNeeded)
         .map((course) => ({
           id: course.id,
           title: course.title,
           instructor: course.instructor,
           price: course.price,
           image: course.image,
-          reason: 'Khóa học phổ biến được nhiều người yêu thích',
+          reason: '🔥 Khóa học phổ biến được nhiều người yêu thích',
           matchScore: 75,
           category: course.category,
           level: course.level || 'Beginner',
         }));
 
-      return popularCourses;
+      finalSuggestions = [...finalSuggestions, ...popularCourses];
     }
 
-    return topSuggestions;
+    // Ensure exactly 4 suggestions before adjusting scores
+    finalSuggestions = finalSuggestions.slice(0, 4);
+
+    // Adjust scores to ensure realistic percentage (75-95%) with 5-point differences
+    const adjustedSuggestions = finalSuggestions.map((suggestion, index) => {
+      // Cap maximum at 95% to be realistic, minimum 75%
+      const maxScore = 95;
+      const minScore = 75;
+
+      // 5-point decreasing differences: 95, 90, 85, 80 (or 90, 85, 80, 75)
+      const adjustedScore = Math.max(maxScore - index * 5, minScore);
+
+      return {
+        ...suggestion,
+        matchScore: adjustedScore,
+      };
+    });
+
+    return adjustedSuggestions;
   };
 
   return (
