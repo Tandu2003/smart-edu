@@ -23,8 +23,8 @@ interface Course {
 }
 
 export default function CoursesPage() {
-  const [courses, setCourses] = useState<Course[]>(mockCourses);
-  const [filteredCourses, setFilteredCourses] = useState<Course[]>(mockCourses);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [selectedPriceRange, setSelectedPriceRange] = useState(0);
@@ -32,10 +32,22 @@ export default function CoursesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isModalLoading, setIsModalLoading] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12; // Show 12 courses per page
+
+  // Initialize courses with loading delay
+  useEffect(() => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setCourses(mockCourses);
+      setFilteredCourses(mockCourses);
+      setIsLoading(false);
+    }, 400);
+  }, []);
 
   useEffect(() => {
     let filtered = courses;
@@ -90,10 +102,17 @@ export default function CoursesPage() {
   const handleViewDetails = (course: Course) => {
     setSelectedCourse(course);
     setIsModalOpen(true);
+    setIsModalLoading(true);
+
+    // Simulate loading delay for modal content
+    setTimeout(() => {
+      setIsModalLoading(false);
+    }, 400);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setIsModalLoading(false);
     setSelectedCourse(null);
   };
 
@@ -123,20 +142,23 @@ export default function CoursesPage() {
         />
 
         {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-gray-600">
-            Tìm thấy <span className="font-semibold">{filteredCourses.length}</span> khóa học
-          </p>
-        </div>
+        {!isLoading && (
+          <div className="mb-6">
+            <p className="text-gray-600">
+              Tìm thấy <span className="font-semibold">{filteredCourses.length}</span> khóa học
+            </p>
+          </div>
+        )}
 
         {/* Courses List */}
-        {filteredCourses.length > 0 ? (
+        {!isLoading && filteredCourses.length > 0 ? (
           <>
             <CourseList
               courses={currentCourses}
               viewMode={viewMode}
               onToggleFavorite={toggleFavorite}
               onViewDetails={handleViewDetails}
+              isLoading={false}
             />
 
             {/* Pagination */}
@@ -150,8 +172,17 @@ export default function CoursesPage() {
               />
             </div>
           </>
-        ) : (
+        ) : !isLoading && filteredCourses.length === 0 ? (
           <NoResults onClearFilters={clearFilters} />
+        ) : (
+          <CourseList
+            courses={[]}
+            viewMode={viewMode}
+            onToggleFavorite={toggleFavorite}
+            onViewDetails={handleViewDetails}
+            isLoading={true}
+            skeletonCount={12}
+          />
         )}
       </div>
 
@@ -161,6 +192,7 @@ export default function CoursesPage() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onToggleFavorite={toggleFavorite}
+        isLoading={isModalLoading}
       />
     </div>
   );

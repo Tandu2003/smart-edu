@@ -1,5 +1,7 @@
 import CourseCard from './CourseCard';
+import CourseCardSkeleton from './CourseCardSkeleton';
 import CourseListItem from './CourseListItem';
+import CourseListItemSkeleton from './CourseListItemSkeleton';
 
 interface Course {
   id: string;
@@ -20,6 +22,8 @@ interface CourseListProps {
   viewMode: 'grid' | 'list';
   onToggleFavorite: (courseId: string) => void;
   onViewDetails: (course: Course) => void;
+  isLoading?: boolean;
+  skeletonCount?: number;
 }
 
 export default function CourseList({
@@ -27,7 +31,29 @@ export default function CourseList({
   viewMode,
   onToggleFavorite,
   onViewDetails,
+  isLoading = false,
+  skeletonCount = 8,
 }: CourseListProps) {
+  if (isLoading) {
+    if (viewMode === 'grid') {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[...Array(skeletonCount)].map((_, index) => (
+            <CourseCardSkeleton key={index} />
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {[...Array(skeletonCount)].map((_, index) => (
+          <CourseListItemSkeleton key={index} />
+        ))}
+      </div>
+    );
+  }
+
   if (viewMode === 'grid') {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
