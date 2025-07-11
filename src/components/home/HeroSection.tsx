@@ -1,6 +1,8 @@
-import { Play, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 import { Link } from 'react-router-dom';
+
+import { Button } from '@/components/ui/button';
 
 interface HeroSectionProps {
   onAISuggestions: () => void;
@@ -20,24 +22,18 @@ export default function HeroSection({ onAISuggestions, isSuggestionsLoading }: H
             con đường học tập phù hợp nhất.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/courses"
-              className="btn-primary bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-3"
-            >
-              Khám phá khóa học
-            </Link>
-            <button
+            <Button variant="hero" size="lg" asChild>
+              <Link to="/courses">Khám phá khóa học</Link>
+            </Button>
+            <Button
+              variant="ai"
+              size="lg"
               onClick={onAISuggestions}
               disabled={isSuggestionsLoading}
-              className="btn-secondary bg-yellow-400 text-purple-900 hover:bg-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed text-lg px-8 py-3"
             >
               <Sparkles className="inline mr-2" size={20} />
-              {isSuggestionsLoading ? 'Đang gợi ý...' : 'Gợi ý sản phẩm phù hợp'}
-            </button>
-            <button className="btn-secondary bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-3">
-              <Play className="inline mr-2" size={20} />
-              Xem demo
-            </button>
+              {isSuggestionsLoading ? 'Đang gợi ý...' : 'Gợi ý khóa học phù hợp'}
+            </Button>
           </div>
         </div>
       </div>

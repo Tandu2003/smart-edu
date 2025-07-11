@@ -51,7 +51,7 @@ export default function CourseFilters({
         {/* Category Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm font-medium text-gray-700 min-w-[140px] justify-between">
+            <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm font-medium text-gray-700 min-w-[140px] justify-between cursor-pointer">
               <span>Danh mục: {selectedCategory}</span>
               <ChevronDown size={16} className="ml-2 text-gray-500" />
             </button>
@@ -70,7 +70,7 @@ export default function CourseFilters({
         {/* Price Range Filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm font-medium text-gray-700 min-w-[140px] justify-between">
+            <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-sm font-medium text-gray-700 min-w-[140px] justify-between cursor-pointer">
               <span>Giá: {priceRanges[selectedPriceRange]?.label}</span>
               <ChevronDown size={16} className="ml-2 text-gray-500" />
             </button>
@@ -93,7 +93,7 @@ export default function CourseFilters({
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onViewModeChange('grid')}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-2 rounded-lg transition-colors cursor-pointer ${
               viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
             }`}
           >
@@ -101,7 +101,7 @@ export default function CourseFilters({
           </button>
           <button
             onClick={() => onViewModeChange('list')}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-2 rounded-lg transition-colors cursor-pointer ${
               viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
             }`}
           >
@@ -113,7 +113,7 @@ export default function CourseFilters({
         {(selectedCategory !== 'Tất cả' || selectedPriceRange !== 0 || searchQuery) && (
           <button
             onClick={onClearFilters}
-            className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+            className="text-blue-600 hover:text-blue-700 font-medium text-sm cursor-pointer"
           >
             Xóa bộ lọc
           </button>

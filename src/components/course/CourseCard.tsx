@@ -1,6 +1,7 @@
 import { Clock, Eye, Heart, ShoppingCart, Star } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { useFavorites } from '@/contexts/FavoritesContext';
 
@@ -64,16 +65,18 @@ export default function CourseCard({ course, onToggleFavorite, onViewDetails }: 
           alt={course.title}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200 rounded-t-2xl"
         />
-        <button
+        <Button
+          variant="favorite"
+          size="favorite"
           onClick={handleToggleFavorite}
-          className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-200 z-10 ${
+          className={`absolute top-3 right-3 z-10 ${
             isFavorite(course.id)
               ? 'bg-red-500 text-white shadow-lg'
               : 'bg-white/80 text-gray-600 hover:bg-red-500 hover:text-white'
           }`}
         >
           <Heart size={16} fill={isFavorite(course.id) ? 'currentColor' : 'none'} />
-        </button>
+        </Button>
         {discountPercentage > 0 && (
           <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
             -{discountPercentage}%
@@ -109,20 +112,18 @@ export default function CourseCard({ course, onToggleFavorite, onViewDetails }: 
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex flex-col space-y-2">
-        <button
-          onClick={handlePurchase}
-          className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold text-sm py-3 px-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center justify-center"
-        >
+        <Button variant="purchase" onClick={handlePurchase} className="w-full rounded-xl">
           <ShoppingCart size={16} className="mr-2" />
           Đăng ký ngay
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="details"
           onClick={() => onViewDetails(course)}
-          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-sm py-3 px-4 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center justify-center"
+          className="w-full rounded-xl"
         >
           <Eye size={16} className="mr-2" />
           Xem chi tiết
-        </button>
+        </Button>
       </CardFooter>
     </Card>
   );

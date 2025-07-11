@@ -1,3 +1,5 @@
+import { toast } from 'sonner';
+
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -95,7 +97,15 @@ export default function HomePage() {
   const handleToggleFavorite = (courseId: string) => {
     const course = coursesWithFavorites.find((c) => c.id === courseId);
     if (course) {
+      const wasAlreadyFavorite = isFavorite(courseId);
+
       toggleFavorite(course);
+
+      if (wasAlreadyFavorite) {
+        toast.success('Đã xóa khỏi danh sách yêu thích');
+      } else {
+        toast.success('Đã thêm vào danh sách yêu thích');
+      }
     }
   };
 
@@ -366,7 +376,7 @@ export default function HomePage() {
         onViewDetails={handleViewDetails}
       />
 
-      <CategoriesSection />
+      <CategoriesSection courses={coursesWithFavorites} />
 
       <CourseModal
         course={selectedCourse}
